@@ -112,7 +112,11 @@ class ChromeNGL:
         try:
             #print("Trying to load JSON state...")
             
-            json_object = json.loads(json_state)
+            if isinstance(json_state, dict):
+                json_object = json_state
+            else:
+                # If it's a string, parse it into a dictionary
+                json_object = json.loads(json_state)
 
             serialized_json = json.dumps(json_object)
 

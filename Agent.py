@@ -2,7 +2,7 @@ from ChromeNGL import ChromeNGL
 from utils import parse_action
 import time
 import json
-
+import torch
 
 class Agent:
     def __init__(self, model=None, start_session: bool = False):
@@ -77,6 +77,7 @@ class Agent:
         output_vector = self.model.build_output_vector(discrete_probs, continuous_probs)
         # APPLY ACTIONS
         #print(output_vector)
+        #print(json_state)
         self.apply_actions(output_vector, json_state)
         return discrete_probs, continuous_probs, output_vector
         
@@ -119,15 +120,19 @@ class Agent:
             self.chrome_ngl.mouse_key_action(x, y, "double_click", key_pressed)
         elif json_change:
             print("Decided to change the JSON state")
-            json_state["position"][0] += delta_position_x
-            json_state["position"][1] += delta_position_y
-            json_state["position"][2] += delta_position_z
-            json_state["crossSectionScale"] += delta_crossSectionScale
-            json_state["projectionOrientation"][0] += delta_projectionOrientation_q1
-            json_state["projectionOrientation"][1] += delta_projectionOrientation_q2
-            json_state["projectionOrientation"][2] += delta_projectionOrientation_q3
-            json_state["projectionOrientation"][3] += delta_projectionOrientation_q4
-            json_state["projectionScale"] += delta_projectionScale
+            json_state["position"][0] += delta_position_x.item() if isinstance(delta_position_x, torch.Tensor) else delta_position_x
+            json_state["position"][1] += delta_position_y.item() if isinstance(delta_position_y, torch.Tensor) else delta_position_y
+            json_state["position"][2] += delta_position_z.item() if isinstance(delta_position_z, torch.Tensor) else delta_position_z
+            
+            json_state["crossSectionScale"] += delta_crossSectionScale.item() if isinstance(delta_crossSectionScale, torch.Tensor) else delta_crossSectionScale
+            
+            json_state["projectionOrientation"][0] += delta_projectionOrientation_q1.item() if isinstance(delta_projectionOrientation_q1, torch.Tensor) else delta_projectionOrientation_q1
+            json_state["projectionOrientation"][1] += delta_projectionOrientation_q2.item() if isinstance(delta_projectionOrientation_q2, torch.Tensor) else delta_projectionOrientation_q2
+            json_state["projectionOrientation"][2] += delta_projectionOrientation_q3.item() if isinstance(delta_projectionOrientation_q3, torch.Tensor) else delta_projectionOrientation_q3
+            json_state["projectionOrientation"][3] += delta_projectionOrientation_q4.item() if isinstance(delta_projectionOrientation_q4, torch.Tensor) else delta_projectionOrientation_q4
+            
+            json_state["projectionScale"] += delta_projectionScale.item() if isinstance(delta_projectionScale, torch.Tensor) else delta_projectionScale
+
 
             self.chrome_ngl.change_JSON_state_url(json_state)
         print("Decision acted upon")

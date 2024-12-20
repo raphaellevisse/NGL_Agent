@@ -1,6 +1,7 @@
 from Agent import Agent
 from RLModel import RLModel
 from ActorCritic import ActorCriticModel
+import time
 # PLACEHOLDER FOR TRAINING
 model = ActorCriticModel(state_size=10, action_size=18) # 10 for 9 values and the image, 18 for 18 possible actions
 
@@ -39,3 +40,4 @@ for episode in range(num_episodes):
 
 
     print(f"Episode {episode + 1}/{num_episodes}, Total Reward: {total_reward}, Epsilon: {model.epsilon}")
+    time.sleep(100000)
