@@ -7,7 +7,7 @@ from collections import deque
 from torchvision import transforms
 
 
-### PLACEHOLDER MODELS
+### PLACEHOLDER 
 class QNetwork(nn.Module):
     def __init__(self, discrete_dim, continuous_dim):
         super(QNetwork, self).__init__()
@@ -77,17 +77,11 @@ class RLModel:
         self.continuous_action_indices = continuous_action_indices
     
     def preprocess_state(self, state):
-        """
-        Converts the state into a flat tensor.
-        """
         position, crossSectionScale, projectionOrientation, projectionScale = state
         state_vector = position + [crossSectionScale] + projectionOrientation + [projectionScale]
         return torch.tensor(state_vector, dtype=torch.float32).unsqueeze(0).to(self.device)
 
     def preprocess_image(self, image):
-        """
-        Preprocess the input image for the model (e.g., resizing, normalization).
-        """
         transform = transforms.Compose([
                 transforms.Resize((256, 256)), 
                 transforms.ToTensor(),         
@@ -113,7 +107,8 @@ class RLModel:
         
         # THESE ARE Q VALUES, NOT ACTIONS --> NEED TO THINK ABOUT RELATIONSHIP TO ACTION
         print("Continous actions and discrete actions are", continuous_actions, discrete_actions)
-        return self.build_output_vector(discrete_actions.squeeze(0), continuous_actions.squeeze(0))
+        output_probs = [discrete_actions, continuous_actions]
+        return output_probs
     
     def store_experience(self, pos_state, image, action, reward, next_pos_state, next_image, done):
         """

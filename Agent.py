@@ -70,12 +70,15 @@ class Agent:
         #                 delta_projectionOrientation_q3, delta_projectionOrientation_q4,  # 4 floats
         #                 delta_projectionScale                  # 1 float
         #             ]
-        output_vector = self.model.action(pos_state, curr_image)
 
+
+
+        discrete_probs, continuous_probs = self.model.action(pos_state, curr_image)
+        output_vector = self.model.build_output_vector(discrete_probs, continuous_probs)
         # APPLY ACTIONS
-        print(output_vector)
+        #print(output_vector)
         self.apply_actions(output_vector, json_state)
-        return output_vector
+        return discrete_probs, continuous_probs, output_vector
         
     def apply_actions(self, output_vector, json_state):
       
@@ -91,16 +94,17 @@ class Agent:
             delta_projectionScale                  # 1 float
         ) = output_vector
         # fitting output_vector back into action space
-        x += 1
-        y += 1
-        x *= 1000
-        y *= 1000
+        x *= 1200
+        y *= 900
         key_pressed = ""
         if key_Shift:
+            print("Shift key pressed")
             key_pressed += "Shift, "
         if key_Ctrl:
+            print("Ctrl key pressed")
             key_pressed += "Ctrl, "
         if key_Alt:
+            print("Alt key pressed")
             key_pressed += "Alt, "
         key_pressed = key_pressed.strip(", ")
 
@@ -125,7 +129,7 @@ class Agent:
             json_state["projectionOrientation"][3] += delta_projectionOrientation_q4
             json_state["projectionScale"] += delta_projectionScale
 
-            self.change_JSON_state(json.dumps(json_state))
+            self.chrome_ngl.change_JSON_state_url(json_state)
         print("Decision acted upon")
 
     def follow_episode(self, episode):
@@ -167,7 +171,7 @@ class Agent:
 if __name__ == "__main__":
     rl_agent = Agent(start_session=True)
     rl_agent.chrome_ngl.start_neuroglancer_session()
-    file_path = "/Users/ri5462/Documents/PNI/RLAgent/episodes/episode_4.json"
+    file_path = "/Users/ri5462/Documents/PNI/RLAgent/episodes/episode_1.json"
     with open(file_path, "r") as file:
         data = json.load(file)
     rl_agent.follow_episode(data)

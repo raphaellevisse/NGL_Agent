@@ -20,8 +20,8 @@ class ChromeNGL:
         self.window_width = 1920
         self.window_height = 1080
         '''Login to Google Account'''
-        self.mail_address = "**********@gmail.com"
-        self.password = '**********'
+        self.mail_address = 'pnirlagent@gmail.com'
+        self.password = 'secret-password'
         
         chrome_options = Options()
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
@@ -86,12 +86,13 @@ class ChromeNGL:
     def get_screenshot(self, save_path: str = None):
         screenshot = self.driver.get_screenshot_as_png()
         image = Image.open(io.BytesIO(screenshot))
-        image = image.resize((256, 256))
+        #image = image.resize((256, 256))
         # Optionally save to disk
         if save_path:
             image.save(save_path, format='PNG')
         return image
     
+
     def get_JSON_state(self):
         #browser_url = self.driver.current_url
         """Parse the URL to get the JSON state"""

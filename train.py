@@ -1,8 +1,8 @@
 from Agent import Agent
 from RLModel import RLModel
-
+from ActorCritic import ActorCriticModel
 # PLACEHOLDER FOR TRAINING
-model = RLModel(state_size=10, action_size=18) # 10 for 9 values and the image, 18 for 18 possible actions
+model = ActorCriticModel(state_size=10, action_size=18) # 10 for 9 values and the image, 18 for 18 possible actions
 
 agent = Agent(model, start_session=True)
 num_episodes = 500 
@@ -17,13 +17,14 @@ for episode in range(num_episodes):
     for step in range(max_steps):
         # Select action
         print("Making decision...")
-        action = agent.decision() # this calls the agent to get the environment
+        discrete_probs, continuous_probs, output_vector = agent.decision() # this calls the agent to get the environment
+        action_probs = [discrete_probs, continuous_probs]
         print("Decision Made")
         next_pos_state, next_image, next_json_state = agent.prepare_state()
         reward = model.reward(next_json_state)
 
         done = False
-        model.store_experience(pos_state, image, action, reward, next_pos_state, next_image, done)
+        model.store_experience(pos_state, image, action_probs, reward, next_pos_state, next_image, done)
         
         
         model.train() # Does not work yet, have to think about the action state more
