@@ -11,16 +11,16 @@ class ActorNetwork(nn.Module):
         super(ActorNetwork, self).__init__()
         
         # Common layers for both actor and critic
-        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)  # 1920x1080 -> 1920x1080
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)  # 1920x1080 -> 960x540
-        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1) # 960x540 -> 480x270
-        self.conv4 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1) # 480x270 -> 240x135
-        self.conv5 = nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1) # 240x135 -> 120x68
+        #self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)  # 1920x1080 -> 1920x1080
+        self.conv2 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1)  # 960x540 -> 480x270
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1) # 480x270 -> 240x135
+        self.conv4 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1) # 240x135 -> 120x68
+        self.conv5 = nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1) # 120x68 -> 60x34
         self.relu = nn.ReLU()
         self.flatten = nn.Flatten()
 
         # Calculate the output size after convolutions
-        conv_output_size = 512 * 120 * 68  # This is from the last convolution layer (512 channels, 120x68 spatial size)
+        conv_output_size = 512 * 60 * 34   # This is from the last convolution layer (512 channels, 120x68 spatial size)
         
         self.fc1 = nn.Linear(conv_output_size + 9, 128)  # Input size = conv_output_size + state size (9)
         self.fc2 = nn.Linear(128, 64)
@@ -35,10 +35,10 @@ class ActorNetwork(nn.Module):
         :return: Action distributions for discrete and continuous actions.
         """
         #print("Image shape", image.shape)
-        x = self.conv1(image)
-        x = self.relu(x)
+        #x = self.conv1(image)
+        #x = self.relu(x)
         #print("X shape", x.shape)
-        x = self.conv2(x)
+        x = self.conv2(image)
         x = self.relu(x)
         #print("X shape", x.shape)
         x = self.conv3(x)
@@ -65,21 +65,20 @@ class ActorNetwork(nn.Module):
 
         return discrete_actions, continuous_actions
 
-
 class CriticNetwork(nn.Module):
     def __init__(self):
         super(CriticNetwork, self).__init__()
         # Common layers for both actor and critic
-        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)  # 1920x1080 -> 1920x1080 (grayscale)
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1)  # 1920x1080 -> 960x540
-        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1) # 960x540 -> 480x270
-        self.conv4 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1) # 480x270 -> 240x135
-        self.conv5 = nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1) # 240x135 -> 120x68
+        #self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)  # 1920x1080 -> 1920x1080 (grayscale)
+        self.conv2 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1)  # 960x540 -> 480x270
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1) # 480x270 -> 240x135
+        self.conv4 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1) # 240x135 -> 120x68
+        self.conv5 = nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1) # 120x68 -> 60x34
         self.relu = nn.ReLU()
         self.flatten = nn.Flatten()
 
         # Calculate the output size after convolutions
-        conv_output_size = 512 * 120 * 68  # This is from the last convolution layer (512 channels, 120x68 spatial size)
+        conv_output_size = 512 * 60 * 34  # This is from the last convolution layer (512 channels, 120x68 spatial size)
         
         self.fc1 = nn.Linear(conv_output_size + 9, 128)  # Input size = conv_output_size + state size (9)
         self.fc2 = nn.Linear(128, 64)
@@ -92,10 +91,10 @@ class CriticNetwork(nn.Module):
         :param image: Tensor of shape (batch_size, 1, 1920, 1080) representing the grayscale image input.
         :return: Value of the state.
         """
-        x = self.conv1(image)
-        x = self.relu(x)
-
-        x = self.conv2(x)
+        #x = self.conv1(image)
+        #x = self.relu(x)
+        #print("image shape", image.shape)
+        x = self.conv2(image)
         x = self.relu(x)
 
         x = self.conv3(x)
@@ -108,7 +107,7 @@ class CriticNetwork(nn.Module):
         x = self.relu(x)
 
         x = self.flatten(x)
-
+        #print("X shape", x.shape)
         # Concatenate state vector with image features
         x = torch.cat((x, state), dim=1)
 
@@ -134,14 +133,24 @@ class ActorCriticModel:
         self.actor = ActorNetwork(discrete_dim, continuous_dim).to(self.device)
         self.critic = CriticNetwork().to(self.device)
 
+        # Target networks
+        self.target_actor = ActorNetwork(discrete_dim, continuous_dim).to(self.device)
+        self.target_critic = CriticNetwork().to(self.device)
+
+        # Copy weights from the main networks to the target networks
+        self.target_actor.load_state_dict(self.actor.state_dict())
+        self.target_critic.load_state_dict(self.critic.state_dict())
+
         self.optimizer_actor = optim.Adam(self.actor.parameters(), lr=0.001)
         self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=0.001)
+
+        self.tau = 0.01  # Soft update rate for target networks
 
         self.gamma = 0.99  # Discount factor
         self.epsilon = 1.0  # For exploration
         self.epsilon_decay = 0.995
         self.epsilon_min = 0.01
-        self.batch_size = 16
+        self.batch_size = 32
         self.memory = deque(maxlen=2000)
 
     def preprocess_state(self, state):
@@ -151,8 +160,6 @@ class ActorCriticModel:
 
     def preprocess_image(self, image):
         transform = transforms.Compose([
-            transforms.Grayscale(num_output_channels=1),  # Convert to grayscale (1 channel)
-            transforms.Resize((1920, 1080)),  # Resize to 256x256
             transforms.ToTensor(),  # Convert to tensor
             transforms.Normalize(mean=[0.5], std=[0.5])  # Normalize for grayscale (1 channel)
         ])
@@ -166,6 +173,7 @@ class ActorCriticModel:
         Choose an action based on the current policy (epsilon-greedy).
         """
         if np.random.rand() <= self.epsilon:
+            print("Epsilon search:", self.epsilon)
             discrete_actions = torch.zeros(1, len(self.discrete_action_indices)).to(self.device)
             random_action_index = random.randint(0, discrete_actions.shape[1] - 1)
             discrete_actions[0, random_action_index] = 1
@@ -200,17 +208,16 @@ class ActorCriticModel:
 
         rewards = torch.tensor(rewards, dtype=torch.float32).to(self.device)
         dones = torch.tensor(dones, dtype=torch.float32).to(self.device)
-        state_tensors = torch.cat([self.preprocess_state(s) for s in states])
-        image_tensors = torch.cat([self.preprocess_image(img) for img in images])
-        next_state_tensors = torch.cat([self.preprocess_state(ns) for ns in next_states])
-        next_image_tensors = torch.cat([self.preprocess_image(nimg) for nimg in next_images])
+        state_tensors = torch.cat([self.preprocess_state(s) for s in states]).to(self.device)
+        image_tensors = torch.cat([self.preprocess_image(img) for img in images]).to(self.device)
+        next_state_tensors = torch.cat([self.preprocess_state(ns) for ns in next_states]).to(self.device)
+        next_image_tensors = torch.cat([self.preprocess_image(nimg) for nimg in next_images]).to(self.device)
 
         # Get state values from the critic network
         state_values = self.critic(state_tensors, image_tensors)
 
-        # Calculate the target value
         with torch.no_grad():
-            next_state_values = self.critic(next_state_tensors, next_image_tensors).squeeze(1)
+            next_state_values = self.target_critic(next_state_tensors, next_image_tensors).squeeze(1)
             # print("Next state shape", next_state_values.shape)
             # print("Dones shape", dones.shape)
             # print("Rewards shape", rewards.shape)
@@ -219,7 +226,6 @@ class ActorCriticModel:
         # Calculate the critic loss (mean squared error between predicted and target state values)
         critic_loss = nn.MSELoss()(state_values, targets)
 
-        # Now update the critic network
         self.optimizer_critic.zero_grad()
         critic_loss.backward()
         self.optimizer_critic.step()
@@ -239,16 +245,9 @@ class ActorCriticModel:
         # For discrete actions, we will get the index of the action with the highest probability
         # For discrete actions, concatenate the action probabilities (or logits) from the batch
         actions_discrete = torch.cat([a[0] for a in actions], dim=0).to(self.device)
-
-        # Convert the action probabilities/logits to a one-hot encoded vector
-        actions_discrete = (actions_discrete == actions_discrete.max(dim=-1, keepdim=True)[0]).float()
-
-        #print("Actions discrete", actions_discrete)
-        # For continuous actions, we will concatenate the continuous action tensors
+        actions_discrete = (actions_discrete == actions_discrete.max(dim=-1, keepdim=True)[0]).float() #converting it into one type of action (one-hot encoding) 
         actions_continuous = torch.cat([a[1] for a in actions], dim=0).to(self.device)
-        #print("Actions continuous", actions_continuous)
 
-        # Get predicted actions from the actor
         predicted_discrete_actions, predicted_continuous_actions = self.actor(state_tensors, image_tensors)
 
         # Calculate discrete loss
@@ -286,11 +285,53 @@ class ActorCriticModel:
             output_vector[idx] = value
         for idx, value in zip(self.continuous_action_indices, continuous_list):
             output_vector[idx] = value
-        print("Output vector", output_vector)
+        print("Output vector with discrete decision (arg-max) and continuous decision", output_vector)
         return output_vector
+    
+    def build_output_logits(self, discrete_actions, continuous_actions):
+        """
+        Handles a batch of inputs and generates a batch of output vectors.
+
+        Args:
+            discrete_actions (torch.Tensor): Tensor of shape (batch_size, num_discrete_actions).
+            continuous_actions (torch.Tensor): Tensor of shape (batch_size, num_continuous_actions).
+
+        Returns:
+            torch.Tensor: Tensor of shape (batch_size, action_size) containing output vectors.
+        """
+        batch_size = discrete_actions.size(0)  # Determine batch size
+        output_vectors = torch.zeros((batch_size, self.action_size), dtype=torch.float32, device=self.device)
+
+        for batch_idx in range(batch_size):
+            discrete_list = discrete_actions[batch_idx].cpu()
+            continuous_list = continuous_actions[batch_idx].cpu()
+
+            output_vector = torch.zeros(self.action_size, dtype=torch.float32).to(self.device)
+
+            for i, idx in enumerate(self.discrete_action_indices):
+                value = discrete_list[i]
+                output_vector[idx] = value
+
+            for idx, value in zip(self.continuous_action_indices, continuous_list):
+                output_vector[idx] = value
+
+            output_vectors[batch_idx] = output_vector  # Assign to the batch output
+
+        print("Batch of output logits shape:", output_vectors.shape)
+        return output_vectors
 
     
     def reward(self, json_state):
         z_position = json_state['position'][2]
 
         return z_position /1000 # value can be changed, testing purposes
+
+    def update_target_networks(self):
+        """
+        Soft-update target networks.
+        """
+        for target_param, param in zip(self.target_actor.parameters(), self.actor.parameters()):
+            target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+
+        for target_param, param in zip(self.target_critic.parameters(), self.critic.parameters()):
+            target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)

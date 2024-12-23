@@ -10,7 +10,8 @@ class Agent:
         self.state = None
         self.action = None
         self.reward = None
-
+        self.x_factor = 1500
+        self.y_factor = 1000
         self.sleep_time = 1 # time between actions
         if start_session:
             self.chrome_ngl = ChromeNGL()
@@ -20,7 +21,7 @@ class Agent:
         
         self.model = model
     
-    def prepare_state(self):
+    def prepare_state(self, image_path=None):
         state = self.chrome_ngl.get_JSON_state()
         json_state = json.loads(state)
         # for now the state we give in just the parsed position, crossSectionScale, projectionOrientation, projectionScale
@@ -29,7 +30,7 @@ class Agent:
         projectionOrientation = json_state["projectionOrientation"]
         projectionScale = json_state["projectionScale"]
         pos_state = [position, crossSectionScale, projectionOrientation, projectionScale]
-        curr_image = self.chrome_ngl.get_screenshot()
+        curr_image = self.chrome_ngl.get_screenshot(image_path)
         return pos_state, curr_image, json_state
   
     def decision(self):
@@ -76,8 +77,6 @@ class Agent:
         discrete_probs, continuous_probs = self.model.action(pos_state, curr_image)
         output_vector = self.model.build_output_vector(discrete_probs, continuous_probs)
         # APPLY ACTIONS
-        #print(output_vector)
-        #print(json_state)
         self.apply_actions(output_vector, json_state)
         return discrete_probs, continuous_probs, output_vector
         
@@ -95,8 +94,8 @@ class Agent:
             delta_projectionScale                  # 1 float
         ) = output_vector
         # fitting output_vector back into action space
-        x *= 1200
-        y *= 900
+        x *= self.x_factor
+        y *= self.y_factor
         key_pressed = ""
         if key_Shift:
             print("Shift key pressed")
@@ -172,16 +171,113 @@ class Agent:
       self.action_history = []
       self.chrome_ngl.start_neuroglancer_session()
 
+    def parse_episode(self, episode, save_path=None):
+        # To call this function, we need to start the session first. Then it will change states and take screenshots
+        parsed_data = []
+        parsed_images = []
+        for i in range(0, len(episode)-1):
+            self.chrome_ngl.change_JSON_state_url(json.dumps(episode[i]["state"]))
+            # we build the action that leads from the previous state to the current state
+            # We need to be careful here, the recording saves the action that led to the state with it, not the action taken in the state
+            pos_state, curr_image, json_state = self.prepare_state(image_path=f"{save_path}/screenshots/" + str(i) + ".png")
+        
+            next_episode = episode[i+1]
+            current_episode = episode[i]
+            
+            next_state = next_episode["state"]
+            current_state = current_episode["state"]
+            next_action = next_episode["action"]
+            
+            output_vector = [
+                0, 0, 0,  # left_click, right_click, double_click
+                0.0, 0.0,  # x, y (mouse position)
+                0, 0, 0,  # key_Shift, key_Ctrl, key_Alt
+                0,  # json_change
+                0.0, 0.0, 0.0,  # delta_position_x, delta_position_y, delta_position_z
+                0.0,  # delta_crossSectionScale
+                0.0, 0.0, 0.0, 0.0,  # delta_projectionOrientation_q1, q2, q3, q4
+                0.0  # delta_projectionScale
+            ]
+            screen_action=False
+            if "Left Click" in next_action:
+                output_vector[0] = 1  
+                screen_action=True
+            elif "Right Click" in next_action:
+                output_vector[1] = 1  
+                screen_action=True
+            elif "Double Click" in next_action:
+                output_vector[2] = 1
+                screen_action=True     
+            if "Relative position" in next_action:
+                position_data = next_action.split("Relative position: ")[1].split(" with keys:")[0]
+                
+                # Extract x and y values
+                # First, remove the "x=" and "y=" prefixes to parse the values as integers
+                position_parts = position_data.split(", y=")
+                x = int(position_parts[0].replace("x=", "").strip())  # Remove "x=" prefix
+                y = int(position_parts[1].strip())  # Directly parse y value
+                
+                output_vector[3] = x / self.x_factor
+                output_vector[4] = y / self.y_factor
+            
+            if "Shift" in next_action:
+                output_vector[5] = 1  # key_Shift
+            if "Ctrl" in next_action:
+                output_vector[6] = 1  # key_Ctrl
+            if "Alt" in next_action:
+                output_vector[7] = 1  # key_Alt
+            
+            if screen_action == False:
+                # This means the action was a JSON change
+                output_vector[8] = 1
+            
+            
+                delta_pos = [
+                    next_state["position"][0] - current_state["position"][0],
+                    next_state["position"][1] - current_state["position"][1],
+                    next_state["position"][2] - current_state["position"][2]
+                ]
+                output_vector[9], output_vector[10], output_vector[11] = delta_pos
+                
+                output_vector[12] = next_state["crossSectionScale"] - current_state["crossSectionScale"]
+                
+                delta_orientation = [
+                    next_state["projectionOrientation"][0] - current_state["projectionOrientation"][0],
+                    next_state["projectionOrientation"][1] - current_state["projectionOrientation"][1],
+                    next_state["projectionOrientation"][2] - current_state["projectionOrientation"][2],
+                    next_state["projectionOrientation"][3] - current_state["projectionOrientation"][3]
+                ]
+                output_vector[13], output_vector[14], output_vector[15], output_vector[16] = delta_orientation
+                
+                output_vector[17] = current_state["projectionScale"] - current_state["projectionScale"]
+                
+            parsed_data.append({
+                "pos_state": pos_state,  # original state for reference
+                "action_vector": tuple(output_vector),  # encoded action vector
+                "action": next_action,  # action description (optional)
+                "json_state": json_state  # the current JSON state (optional)
+            })
+            parsed_images.append(curr_image)
+            print("Output vector: ", output_vector)
+            # Save the parsed data to a file (you can choose the format)
+        with open(f"{save_path}/data.json", "w") as f:
+            json.dump(parsed_data, f, indent=4)
+        
+        return parsed_data
+
+
 
 if __name__ == "__main__":
     rl_agent = Agent(start_session=True)
     rl_agent.chrome_ngl.start_neuroglancer_session()
-    file_path = "/Users/ri5462/Documents/PNI/RLAgent/episodes/episode_1.json"
-    with open(file_path, "r") as file:
-        data = json.load(file)
-    rl_agent.follow_episode(data)
-    print("Episode completed")
-    time.sleep(50)
+    for i in range(12, 14):
+        file_path = f"./episodes/episode_{i}.json"
+        with open(file_path, "r") as file:
+            data = json.load(file)
+        save_path = f"./parsed_episodes/episode_{i}/"
+        rl_agent.parse_episode(data, save_path)
+        print("Episode completed")
+    time.sleep(5)
 
 
     
