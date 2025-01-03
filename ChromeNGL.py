@@ -13,7 +13,7 @@ from PIL import Image
 import io
 import os
 class ChromeNGL:
-    def __init__(self, width: int = 1920, height: int = 1080):
+    def __init__(self, headless=False, width: int = 1920, height: int = 1080):
         self.state = None
         self.action = None
         self.reward = None
@@ -24,13 +24,19 @@ class ChromeNGL:
         self.password = 'secret-password'
         
         chrome_options = Options()
+        if headless:
+            chrome_options.add_argument("--headless")
+            #chrome_options.add_argument("--disable-gpu") provokes WebGL error
+            chrome_options.add_argument("--enable-logging")
+            chrome_options.add_argument("--no-sandbox")
+            chrome_options.add_argument("--disable-dev-shm-usage")
+
+        chrome_options.add_argument(f"--window-size={width},{height}")
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option("useAutomationExtension", False)
         chrome_options.add_experimental_option("excludeSwitches",["enable-automation"])  
         chrome_service = Service("chromedriver-mac-arm64/chromedriver")
         self.driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
-        self.driver.set_window_position(0, 0)
-        self.driver.set_window_size(1920, 1080)
         self.init_url = 'https://accounts.google.com/Login'
         '''---------------------------------'''
 
@@ -45,6 +51,7 @@ class ChromeNGL:
     def start_neuroglancer_session(self):
         self.change_url("http://localhost:8000/client/#!%7B%22dimensions%22:%7B%22x%22:%5B4e-9%2C%22m%22%5D%2C%22y%22:%5B4e-9%2C%22m%22%5D%2C%22z%22:%5B4e-8%2C%22m%22%5D%7D%2C%22position%22:%5B160533.40625%2C80462.75%2C2479.5%5D%2C%22crossSectionScale%22:1.8496565995583267%2C%22projectionOrientation%22:%5B-0.11066838353872299%2C-0.7560726404190063%2C0.10504592210054398%2C0.6364527344703674%5D%2C%22projectionScale%22:31260.083367410043%2C%22layers%22:%5B%7B%22type%22:%22image%22%2C%22source%22:%22precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14%22%2C%22tab%22:%22source%22%2C%22name%22:%22Maryland%20%28USA%29-image%22%7D%2C%7B%22type%22:%22segmentation%22%2C%22source%22:%22precomputed://gs://flywire_v141_m783%22%2C%22tab%22:%22source%22%2C%22segments%22:%5B%22720575940623044103%22%5D%2C%22name%22:%22flywire_v141_m783%22%7D%5D%2C%22showDefaultAnnotations%22:false%2C%22selectedLayer%22:%7B%22size%22:350%2C%22visible%22:true%2C%22layer%22:%22flywire_v141_m783%22%7D%2C%22layout%22:%22xy-3d%22%7D")
         time.sleep(1)
+
 
     def google_login(self):
         try:
@@ -146,30 +153,36 @@ class ChromeNGL:
     def mouse_key_action(self, x: float, y: float, action: str, keysPressed:str = "None"):
         self.action_handler.execute_click(x, y, action, keysPressed)
 
+    def change_viewport_size(self, width: int, height: int):
+        self.driver.set_window_size(width, height)
+        self.window_width = width
+        self.window_height = height
 
 if __name__ == "__main__":
-    chrome_ngl = ChromeNGL()
+    chrome_ngl = ChromeNGL(headless=False)
     chrome_ngl.start_session()
     chrome_ngl.start_neuroglancer_session()
     time.sleep(1)
     
     while True:
         try:
+            #print(chrome_ngl.get_url())
+            #time.sleep(1)
             user_input = input("Enter x and y coordinates separated by a comma (or type 'exit' to quit): ").strip()
-            if user_input.lower() == 'exit':
-                print("Exiting the script...")
-                break
+            # if user_input.lower() == 'exit':
+            #     print("Exiting the script...")
+            #     break
 
-            x, y = map(int, user_input.split(','))
-            action = input("Enter the action (e.g., 'left_click', 'right_click', 'double_click'): ").strip()
-            print(f"Received: x={x}, y={y}, action={action}")
-            keysPressed = input("Enter keys to press (separate by commas and with Capital first letter, e.g., 'Shift, Ctrl'): ").strip()
-            if not keysPressed:
-                keysPressed = "None"  # If no keys are pressed, default to "None"
+            # x, y = map(int, user_input.split(','))
+            # action = input("Enter the action (e.g., 'left_click', 'right_click', 'double_click'): ").strip()
+            # print(f"Received: x={x}, y={y}, action={action}")
+            # keysPressed = input("Enter keys to press (separate by commas and with Capital first letter, e.g., 'Shift, Ctrl'): ").strip()
+            # if not keysPressed:
+            #     keysPressed = "None"  # If no keys are pressed, default to "None"
             
-            chrome_ngl.mouse_key_action(x, y, action, keysPressed)
-            print(f"Action '{action}' performed at ({x}, {y}).")
-            time.sleep(1) 
+            # chrome_ngl.mouse_key_action(x, y, action, keysPressed)
+            # print(f"Action '{action}' performed at ({x}, {y}).")
+            # time.sleep(1) 
         except ValueError:
             print("Invalid input. Please enter x and y as integers separated by a comma.")
         except Exception as e:

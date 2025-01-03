@@ -5,7 +5,7 @@ import json
 import torch
 
 class Agent:
-    def __init__(self, model=None, start_session: bool = False):
+    def __init__(self, model=None, headless=False, start_session: bool = False):
         self.action_history = []
         self.state = None
         self.action = None
@@ -14,14 +14,14 @@ class Agent:
         self.y_factor = 1000
         self.sleep_time = 1 # time between actions
         if start_session:
-            self.chrome_ngl = ChromeNGL()
+            self.chrome_ngl = ChromeNGL(headless=headless)
             self.chrome_ngl.start_session()
         else:
             self.chrome_ngl = None
         
-        self.model = model
+        #self.model = model
     
-    def prepare_state(self, image_path=None):
+    def prepare_state(self, image_path=None, verbose=False):
         state = self.chrome_ngl.get_JSON_state()
         json_state = json.loads(state)
         # for now the state we give in just the parsed position, crossSectionScale, projectionOrientation, projectionScale
@@ -31,16 +31,19 @@ class Agent:
         projectionScale = json_state["projectionScale"]
         pos_state = [position, crossSectionScale, projectionOrientation, projectionScale]
         curr_image = self.chrome_ngl.get_screenshot(image_path)
+        if verbose:
+            print("Current state:", pos_state)
         return pos_state, curr_image, json_state
   
     def decision(self):
+        # TO NOT BE USED IN THE FINAL VERSION
         # make a decision based on the current state
         pos_state, curr_image, json_state = self.prepare_state()
         # preprocess the state by making it a vector
         # input = [position, crossSectionScale, projectionOrientation, projectionScale, image]
         # MODEL INPUT = [state, image] (or memory, TBD)
 
-        ## Does not work as everything should be boolean for RL, make boolean increments for each action ?
+        ## Does not work as everything should be boolean for RL, make boolean increments for each action ? (Only in Deep Q Learning)
         # OUTPUT OF THE MODEL:
         # Actions can be:
         # - left click bool
@@ -172,6 +175,7 @@ class Agent:
       self.chrome_ngl.start_neuroglancer_session()
 
     def parse_episode(self, episode, save_path=None):
+        # Function for parsing the episode data into a format that can be used for pretraining (imitation learning)
         # To call this function, we need to start the session first. Then it will change states and take screenshots
         parsed_data = []
         parsed_images = []

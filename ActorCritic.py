@@ -7,10 +7,12 @@ from collections import deque
 from torchvision import transforms
 
 class ActorNetwork(nn.Module):
-    def __init__(self, discrete_dim, continuous_dim):
+    def __init__(self, discrete_dim, continuous_dim, image_width, image_height):
         super(ActorNetwork, self).__init__()
-        
-        # Common layers for both actor and critic
+
+        self.width = image_width
+        self.height = image_height
+        # Common layers for both actor and critic (Technically could be different)
         #self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)  # 1920x1080 -> 1920x1080
         self.conv2 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1)  # 960x540 -> 480x270
         self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1) # 480x270 -> 240x135
@@ -19,14 +21,18 @@ class ActorNetwork(nn.Module):
         self.relu = nn.ReLU()
         self.flatten = nn.Flatten()
 
-        # Calculate the output size after convolutions
-        conv_output_size = 512 * 60 * 34   # This is from the last convolution layer (512 channels, 120x68 spatial size)
-        
+        conv_output_size = self._get_conv_output()
         self.fc1 = nn.Linear(conv_output_size + 9, 128)  # Input size = conv_output_size + state size (9)
         self.fc2 = nn.Linear(128, 64)
         self.continuous_head = nn.Linear(64, continuous_dim)
         self.discrete_head = nn.Linear(64, discrete_dim)
 
+    def _get_conv_output(self):
+        # Create a dummy input tensor to pass through the network
+        dummy_input = torch.zeros(1, 3, self.height, self.width)
+        dummy_output = self.relu(self.conv5(self.relu(self.conv4(self.relu(self.conv3(self.relu(self.conv2(dummy_input))))))))
+        return dummy_output.numel()
+    
     def forward(self, state, image):
         """
         Forward pass through the actor network.
@@ -60,15 +66,17 @@ class ActorNetwork(nn.Module):
         x = self.fc2(x)
         x = self.relu(x)
         
-        continuous_actions = torch.sigmoid(self.continuous_head(x))  # Continuous actions in the range [-1, 1]
-        discrete_actions = torch.sigmoid(self.discrete_head(x))  # Discrete actions in the range [0, 1]
+        continuous_actions = torch.sigmoid(self.continuous_head(x))  # Continuous actions in the range [0, 1]
+        discrete_actions = torch.tanh(self.discrete_head(x))  # Discrete actions in the range [-1, 1]
 
         return discrete_actions, continuous_actions
 
 class CriticNetwork(nn.Module):
-    def __init__(self):
+    def __init__(self, image_width, image_height):
         super(CriticNetwork, self).__init__()
-        # Common layers for both actor and critic
+        self.width = image_width
+        self.height = image_height
+        # Common layers for both actor and critic (Technically could be different)
         #self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)  # 1920x1080 -> 1920x1080 (grayscale)
         self.conv2 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1)  # 960x540 -> 480x270
         self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1) # 480x270 -> 240x135
@@ -77,13 +85,17 @@ class CriticNetwork(nn.Module):
         self.relu = nn.ReLU()
         self.flatten = nn.Flatten()
 
-        # Calculate the output size after convolutions
-        conv_output_size = 512 * 60 * 34  # This is from the last convolution layer (512 channels, 120x68 spatial size)
-        
+        conv_output_size = self._get_conv_output()
         self.fc1 = nn.Linear(conv_output_size + 9, 128)  # Input size = conv_output_size + state size (9)
         self.fc2 = nn.Linear(128, 64)
-        self.value_head = nn.Linear(64, 1)  # Output a single value
+        self.value_head = nn.Linear(64, 1)  # Output a single value (state value)
 
+    def _get_conv_output(self):
+        # Create a dummy input tensor to pass through the network
+        dummy_input = torch.zeros(1, 3, self.height, self.width)
+        dummy_output = self.relu(self.conv5(self.relu(self.conv4(self.relu(self.conv3(self.relu(self.conv2(dummy_input))))))))
+        return dummy_output.numel()
+    
     def forward(self, state, image):
         """
         Forward pass through the critic network.
@@ -121,7 +133,7 @@ class CriticNetwork(nn.Module):
 
 
 class ActorCriticModel:
-    def __init__(self, state_size, action_size, device="cpu"):
+    def __init__(self, state_size, action_size, batch_size = 32, device="cpu", image_width = 480, image_height = 270):
         self.state_size = state_size
         self.action_size = action_size
         self.device = device
@@ -130,12 +142,15 @@ class ActorCriticModel:
         discrete_dim = len(self.discrete_action_indices)
         continuous_dim = len(self.continuous_action_indices)
 
-        self.actor = ActorNetwork(discrete_dim, continuous_dim).to(self.device)
-        self.critic = CriticNetwork().to(self.device)
+        # Parameters for image dimensions
+        self.image_width = image_width
+        self.image_height = image_height
+        self.actor = ActorNetwork(discrete_dim, continuous_dim, self.image_width, self.image_height).to(self.device)
+        self.critic = CriticNetwork(self.image_width, self.image_height).to(self.device)
 
-        # Target networks
-        self.target_actor = ActorNetwork(discrete_dim, continuous_dim).to(self.device)
-        self.target_critic = CriticNetwork().to(self.device)
+        # Target networks for stability
+        self.target_actor = ActorNetwork(discrete_dim, continuous_dim, self.image_width, self.image_height).to(self.device)
+        self.target_critic = CriticNetwork(self.image_width, self.image_height).to(self.device)
 
         # Copy weights from the main networks to the target networks
         self.target_actor.load_state_dict(self.actor.state_dict())
@@ -150,8 +165,10 @@ class ActorCriticModel:
         self.epsilon = 1.0  # For exploration
         self.epsilon_decay = 0.995
         self.epsilon_min = 0.01
-        self.batch_size = 32
+        self.batch_size = batch_size
         self.memory = deque(maxlen=2000)
+
+
 
     def preprocess_state(self, state):
         position, crossSectionScale, projectionOrientation, projectionScale = state
@@ -160,11 +177,11 @@ class ActorCriticModel:
 
     def preprocess_image(self, image):
         transform = transforms.Compose([
-            transforms.ToTensor(),  # Convert to tensor
+            transforms.Resize((self.image_height, self.image_width)),
+            transforms.ToTensor(),  
             transforms.Normalize(mean=[0.5], std=[0.5])  # Normalize for grayscale (1 channel)
         ])
         
-        # Apply the transformations
         image_tensor = transform(image).unsqueeze(0).to(self.device)  # Add batch dimension
         return image_tensor
 
@@ -173,6 +190,7 @@ class ActorCriticModel:
         Choose an action based on the current policy (epsilon-greedy).
         """
         if np.random.rand() <= self.epsilon:
+            # For exploration, choose random actions
             print("Epsilon search:", self.epsilon)
             discrete_actions = torch.zeros(1, len(self.discrete_action_indices)).to(self.device)
             random_action_index = random.randint(0, discrete_actions.shape[1] - 1)
@@ -183,9 +201,9 @@ class ActorCriticModel:
         state_tensor = self.preprocess_state(pos_state)
         image_tensor = self.preprocess_image(image)
 
+
         with torch.no_grad():
             discrete_actions, continuous_actions = self.actor(state_tensor, image_tensor)
-
 
         return discrete_actions, continuous_actions
 
@@ -213,7 +231,6 @@ class ActorCriticModel:
         next_state_tensors = torch.cat([self.preprocess_state(ns) for ns in next_states]).to(self.device)
         next_image_tensors = torch.cat([self.preprocess_image(nimg) for nimg in next_images]).to(self.device)
 
-        # Get state values from the critic network
         state_values = self.critic(state_tensors, image_tensors)
 
         with torch.no_grad():
@@ -255,10 +272,7 @@ class ActorCriticModel:
         discrete_loss = -torch.sum(log_probs * actions_discrete, dim=1)  # Weighted by actual actions
         discrete_loss = torch.mean(discrete_loss * advantages)  # Weighted by advantages
 
-        # Calculate continuous loss
         continuous_loss = nn.MSELoss()(predicted_continuous_actions, actions_continuous)
-
-        # Total loss for actor
         actor_loss = discrete_loss + continuous_loss
 
         self.optimizer_actor.zero_grad()
@@ -317,7 +331,7 @@ class ActorCriticModel:
 
             output_vectors[batch_idx] = output_vector  # Assign to the batch output
 
-        print("Batch of output logits shape:", output_vectors.shape)
+        #print("Batch of output logits shape:", output_vectors.shape)
         return output_vectors
 
     
@@ -335,3 +349,8 @@ class ActorCriticModel:
 
         for target_param, param in zip(self.target_critic.parameters(), self.critic.parameters()):
             target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+
+    def save_model(self, actor_file, critic_file):
+        torch.save(self.actor.state_dict(), actor_file)
+        torch.save(self.critic.state_dict(), critic_file)
+        print("Model weights saved!")
