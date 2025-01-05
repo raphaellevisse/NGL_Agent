@@ -7,6 +7,7 @@ from Agent import Agent
 import os
 from PIL import Image
 
+torch.cuda.empty_cache()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}", flush=True)
 
@@ -138,12 +139,12 @@ model = ActorCriticModel(state_size=state_size, action_size=action_size, device=
 #agent = Agent(model, start_session=False)
 
 episodes_path = "./parsed_episodes/"
-num_episodes = 13
+num_episodes = 1
 # This could be done elsewhere but it is sufficiently fast to be done directly here
 episodes_data = load_episode_data(num_episodes, episodes_path)
 #print("Parsing data")
 #episodes_data = torch.load('./pretrain_data.pt')
 print(f"Loaded {len(episodes_data)} episodes", flush=True)
-pretrain_model(episodes_data, model, batch_size=64, num_epochs=1000)
+pretrain_model(episodes_data, model, batch_size=16, num_epochs=250)
 
 model.save_model("./checkpoints/actor_weights_final_v1.pt", "./checkpoints/critic_weights_final_v1.pt")

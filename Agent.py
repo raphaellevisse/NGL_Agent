@@ -274,7 +274,7 @@ class Agent:
 if __name__ == "__main__":
     rl_agent = Agent(start_session=True)
     rl_agent.chrome_ngl.start_neuroglancer_session()
-    for i in range(12, 14):
+    for i in range(0, 1):         # CHANGE FOR NUMBER OF EPISODES PROCESSING AND ORDER OF PROCESSING
         file_path = f"./episodes/episode_{i}.json"
         with open(file_path, "r") as file:
             data = json.load(file)

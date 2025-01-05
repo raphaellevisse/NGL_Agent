@@ -35,7 +35,7 @@ class ChromeNGL:
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option("useAutomationExtension", False)
         chrome_options.add_experimental_option("excludeSwitches",["enable-automation"])  
-        chrome_service = Service("chromedriver-mac-arm64/chromedriver")
+        chrome_service = Service("chromedriver-win64/chromedriver.exe")
         self.driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
         self.init_url = 'https://accounts.google.com/Login'
         '''---------------------------------'''
@@ -50,7 +50,7 @@ class ChromeNGL:
 
     def start_neuroglancer_session(self):
         self.change_url("http://localhost:8000/client/#!%7B%22dimensions%22:%7B%22x%22:%5B4e-9%2C%22m%22%5D%2C%22y%22:%5B4e-9%2C%22m%22%5D%2C%22z%22:%5B4e-8%2C%22m%22%5D%7D%2C%22position%22:%5B160533.40625%2C80462.75%2C2479.5%5D%2C%22crossSectionScale%22:1.8496565995583267%2C%22projectionOrientation%22:%5B-0.11066838353872299%2C-0.7560726404190063%2C0.10504592210054398%2C0.6364527344703674%5D%2C%22projectionScale%22:31260.083367410043%2C%22layers%22:%5B%7B%22type%22:%22image%22%2C%22source%22:%22precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14%22%2C%22tab%22:%22source%22%2C%22name%22:%22Maryland%20%28USA%29-image%22%7D%2C%7B%22type%22:%22segmentation%22%2C%22source%22:%22precomputed://gs://flywire_v141_m783%22%2C%22tab%22:%22source%22%2C%22segments%22:%5B%22720575940623044103%22%5D%2C%22name%22:%22flywire_v141_m783%22%7D%5D%2C%22showDefaultAnnotations%22:false%2C%22selectedLayer%22:%7B%22size%22:350%2C%22visible%22:true%2C%22layer%22:%22flywire_v141_m783%22%7D%2C%22layout%22:%22xy-3d%22%7D")
-        time.sleep(1)
+        time.sleep(100)
 
 
     def google_login(self):
