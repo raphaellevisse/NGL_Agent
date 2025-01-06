@@ -34,7 +34,6 @@ class Agent:
         curr_image = self.chrome_ngl.get_screenshot(image_path)
         if verbose:
             print("Current state:", pos_state)
-        #normalized_pos_state = self.normalize_pos_state(pos_state)
         return pos_state, curr_image, json_state
   
 
@@ -100,8 +99,8 @@ class Agent:
             delta_projectionScale                  # 1 float
         ) = [v.item() if isinstance(v, torch.Tensor) else v for v in output_vector]
         # fitting output_vector back into action space
-        x = x * self.x_factor
-        y = y * self.y_factor
+        x = x * self.values.x_factor
+        y = y * self.values.y_factor
         key_pressed = ""
         if key_Shift:
             print("Shift key pressed")
@@ -232,8 +231,8 @@ class Agent:
                 x = int(position_parts[0].replace("x=", "").strip())  # Remove "x=" prefix
                 y = int(position_parts[1].strip())  # Directly parse y value
                 
-                output_vector[3] = x / self.values.x_factor
-                output_vector[4] = y / self.values.y_factor
+                output_vector[3] = x
+                output_vector[4] = y
             
             if "Shift" in next_action:
                 output_vector[5] = 1  # key_Shift
@@ -246,25 +245,24 @@ class Agent:
                 # This means the action was a JSON change
                 output_vector[8] = 1
             
-            
                 delta_pos = [
-                    (next_state["position"][0] - current_state["position"][0]) / self.values.delta_x_factor,
-                    (next_state["position"][1] - current_state["position"][1]) / self.values.delta_y_factor,
-                    (next_state["position"][2] - current_state["position"][2]) / self.values.delta_z_factor
+                    (next_state["position"][0] - current_state["position"][0]),
+                    (next_state["position"][1] - current_state["position"][1]),
+                    (next_state["position"][2] - current_state["position"][2])
                 ]
                 output_vector[9], output_vector[10], output_vector[11] = delta_pos
                 
-                output_vector[12] = (next_state["crossSectionScale"] - current_state["crossSectionScale"]) / self.values.delta_crossSectionScale_factor
+                output_vector[12] = (next_state["crossSectionScale"] - current_state["crossSectionScale"])
                 
                 delta_orientation = [
-                    (next_state["projectionOrientation"][0] - current_state["projectionOrientation"][0]) / self.values.delta_q1_factor,
-                    (next_state["projectionOrientation"][1] - current_state["projectionOrientation"][1]) / self.values.delta_q2_factor,
-                    (next_state["projectionOrientation"][2] - current_state["projectionOrientation"][2]) / self.values.delta_q3_factor,
-                    (next_state["projectionOrientation"][3] - current_state["projectionOrientation"][3]) / self.values.delta_q4_factor
+                    (next_state["projectionOrientation"][0] - current_state["projectionOrientation"][0]),
+                    (next_state["projectionOrientation"][1] - current_state["projectionOrientation"][1]),
+                    (next_state["projectionOrientation"][2] - current_state["projectionOrientation"][2]),
+                    (next_state["projectionOrientation"][3] - current_state["projectionOrientation"][3])
                 ]
                 output_vector[13], output_vector[14], output_vector[15], output_vector[16] = delta_orientation
                 
-                output_vector[17] = (current_state["projectionScale"] - current_state["projectionScale"]) / self.values.delta_projectionScale_factor
+                output_vector[17] = (next_state["projectionScale"] - current_state["projectionScale"])
             
             pos_state, curr_image, json_state = self.prepare_state(image_path=f"{save_path}/screenshots/" + str(i) + ".png")
 

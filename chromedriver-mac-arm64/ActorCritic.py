@@ -194,6 +194,26 @@ class ActorCriticModel:
         norm_projectionScale = projectionScale / self.values.projectionScale_factor
         state_vector = norm_position + [norm_crossSectionScale] + norm_projectionOrientation + [norm_projectionScale]
         return torch.tensor(state_vector, dtype=torch.float32).unsqueeze(0).to(self.device)
+    
+    def preprocess_action(self, output_vector):
+        #print("Output vector before normalization", output_vector)
+        output_vector[3] = output_vector[3] / self.values.x_factor
+        output_vector[4] = output_vector[4] / self.values.y_factor
+        
+        output_vector[9] = output_vector[9] / self.values.delta_x_factor
+        output_vector[10] = output_vector[10] / self.values.delta_y_factor
+        output_vector[11] = output_vector[11] / self.values.delta_z_factor
+
+        output_vector[12] = output_vector[12] / self.values.delta_crossSectionScale_factor
+
+        output_vector[13] = output_vector[13] / self.values.delta_q1_factor
+        output_vector[14] = output_vector[14] / self.values.delta_q2_factor
+        output_vector[15] = output_vector[15] / self.values.delta_q3_factor
+        output_vector[16] = output_vector[16] / self.values.delta_q4_factor
+
+        output_vector[17] = output_vector[17] / self.values.delta_projectionScale_factor
+        #print("Output vector after normalization", output_vector)
+        return output_vector
 
     def preprocess_image(self, image):
         transform = transforms.Compose([

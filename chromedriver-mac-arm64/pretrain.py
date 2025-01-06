@@ -67,7 +67,8 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
             for episode in batch:
                 json_state = episode['json_state']
                 pos_state = model.preprocess_state(episode['pos_state']).to(device)
-                action = torch.tensor(episode['action_vector'], dtype=torch.float32).to(device)
+                action = torch.tensor(model.preprocess_action(episode['action_vector']), dtype=torch.float32).to(device)
+                #print("Action vector", action, flush=True)
                 image = model.preprocess_image(episode['screenshot']).to(device)
                 next_image = model.preprocess_image(episode['next_screenshot']).to(device)
                 reward = torch.tensor(model.reward(json_state), dtype=torch.float32).to(device)
@@ -83,6 +84,7 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
             #print("Preparing tensors", flush=True)
             pos_states_tensor = torch.cat(pos_states, dim=0)
             actions_tensor = torch.stack(actions)
+            #print(actions_tensor[0,:])
             rewards_tensor = torch.stack(rewards)
             next_states_tensor = torch.cat(next_pos_states, dim=0)
             images_tensor = torch.stack(images).squeeze(1)
