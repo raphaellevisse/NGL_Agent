@@ -124,18 +124,19 @@ class Agent:
             self.chrome_ngl.mouse_key_action(x, y, "double_click", key_pressed)
         elif json_change:
             print("Decided to change the JSON state")
-            json_state["position"][0] += delta_position_x.item() if isinstance(delta_position_x, torch.Tensor) else delta_position_x
-            json_state["position"][1] += delta_position_y.item() if isinstance(delta_position_y, torch.Tensor) else delta_position_y
-            json_state["position"][2] += delta_position_z.item() if isinstance(delta_position_z, torch.Tensor) else delta_position_z
+
+            json_state["position"][0] += delta_position_x.item()*self.values.delta_x_factor if isinstance(delta_position_x, torch.Tensor) else delta_position_x*self.values.delta_x_factor
+            json_state["position"][1] += delta_position_y.item()*self.values.delta_y_factor if isinstance(delta_position_y, torch.Tensor) else delta_position_y*self.values.delta_y_factor
+            json_state["position"][2] += delta_position_z.item()*self.values.delta_z_factor if isinstance(delta_position_z, torch.Tensor) else delta_position_z*self.values.delta_z_factor
             
-            json_state["crossSectionScale"] += delta_crossSectionScale.item() if isinstance(delta_crossSectionScale, torch.Tensor) else delta_crossSectionScale
+            json_state["crossSectionScale"] += delta_crossSectionScale.item()*self.values.delta_crossSectionScale_factor if isinstance(delta_crossSectionScale, torch.Tensor) else delta_crossSectionScale*self.values.delta_crossSectionScale_factor
             
-            json_state["projectionOrientation"][0] += delta_projectionOrientation_q1.item() if isinstance(delta_projectionOrientation_q1, torch.Tensor) else delta_projectionOrientation_q1
-            json_state["projectionOrientation"][1] += delta_projectionOrientation_q2.item() if isinstance(delta_projectionOrientation_q2, torch.Tensor) else delta_projectionOrientation_q2
-            json_state["projectionOrientation"][2] += delta_projectionOrientation_q3.item() if isinstance(delta_projectionOrientation_q3, torch.Tensor) else delta_projectionOrientation_q3
-            json_state["projectionOrientation"][3] += delta_projectionOrientation_q4.item() if isinstance(delta_projectionOrientation_q4, torch.Tensor) else delta_projectionOrientation_q4
+            json_state["projectionOrientation"][0] += delta_projectionOrientation_q1.item()*self.values.delta_q1_factor if isinstance(delta_projectionOrientation_q1, torch.Tensor) else delta_projectionOrientation_q1*self.values.delta_q1_factor
+            json_state["projectionOrientation"][1] += delta_projectionOrientation_q2.item()*self.values.delta_q2_factor if isinstance(delta_projectionOrientation_q2, torch.Tensor) else delta_projectionOrientation_q2*self.values.delta_q2_factor
+            json_state["projectionOrientation"][2] += delta_projectionOrientation_q3.item()*self.values.delta_q3_factor if isinstance(delta_projectionOrientation_q3, torch.Tensor) else delta_projectionOrientation_q3*self.values.delta_q3_factor
+            json_state["projectionOrientation"][3] += delta_projectionOrientation_q4.item()*self.values.delta_q4_factor if isinstance(delta_projectionOrientation_q4, torch.Tensor) else delta_projectionOrientation_q4*self.values.delta_q4_factor
             
-            json_state["projectionScale"] += delta_projectionScale.item()*50 if isinstance(delta_projectionScale, torch.Tensor) else delta_projectionScale
+            json_state["projectionScale"] += delta_projectionScale.item()*self.values.delta_projectionScale_factor if isinstance(delta_projectionScale, torch.Tensor) else delta_projectionScale*self.values.delta_projectionScale_factor
 
 
             self.chrome_ngl.change_JSON_state_url(json_state)
@@ -287,11 +288,11 @@ if __name__ == "__main__":
     rl_agent.chrome_ngl.start_neuroglancer_session()
     time.sleep(1)
     print("Session started")
-    for i in range(9, 10):
+    for i in range(1, 14):
         file_path = f"./episodes/episode_{i}.json"
         with open(file_path, "r") as file:
             data = json.load(file)
-        save_path = f"./normalized_parsed_episodes/episode_{i}/"
+        save_path = f"./reparsed_episodes/episode_{i}/"
 
         rl_agent.parse_episode(data, save_path)
         print("Episode completed")
