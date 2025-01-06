@@ -7,7 +7,6 @@ from Agent import Agent
 import os
 from PIL import Image
 
-torch.cuda.empty_cache()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}", flush=True)
 
@@ -68,7 +67,8 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
             for episode in batch:
                 json_state = episode['json_state']
                 pos_state = model.preprocess_state(episode['pos_state']).to(device)
-                action = torch.tensor(episode['action_vector'], dtype=torch.float32).to(device)
+                action = torch.tensor(model.preprocess_action(episode['action_vector']), dtype=torch.float32).to(device)
+                #print("Action vector", action, flush=True)
                 image = model.preprocess_image(episode['screenshot']).to(device)
                 next_image = model.preprocess_image(episode['next_screenshot']).to(device)
                 reward = torch.tensor(model.reward(json_state), dtype=torch.float32).to(device)
@@ -84,6 +84,7 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
             #print("Preparing tensors", flush=True)
             pos_states_tensor = torch.cat(pos_states, dim=0)
             actions_tensor = torch.stack(actions)
+            #print(actions_tensor[0,:])
             rewards_tensor = torch.stack(rewards)
             next_states_tensor = torch.cat(next_pos_states, dim=0)
             images_tensor = torch.stack(images).squeeze(1)
@@ -97,13 +98,16 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
             # print("Next images shape", next_images_tensor.shape, flush=True)
 
             # Train the Actor (Imitation learning)
-
+            
             discrete_probs, continuous_probs = model.actor(pos_states_tensor, images_tensor)
             #print("Probs shape",discrete_probs.shape, continuous_probs.shape, flush=True)
-            decision_logits= model.build_output_logits(discrete_probs, continuous_probs)
-            #print(decision_logits.shape, actions_tensor.shape)
-
-            actor_loss = torch.nn.CrossEntropyLoss()(decision_logits, actions_tensor)
+            
+            discrete_actions, continuous_actions = model.discrete_continuous_from_actions(actions_tensor)
+            #print("Predicted actions", discrete_probs[0,:], continuous_probs[0,:], flush=True)
+            #print("Actual actions", discrete_actions[0,:], continuous_actions[0,:], flush=True)
+            discrete_loss = model.discrete_loss_fn(discrete_probs, discrete_actions)
+            continuous_loss = model.continuous_loss_fn(continuous_probs, continuous_actions)
+            actor_loss = discrete_loss + continuous_loss
             #print("Actor loss is ", actor_loss, flush=True)
             value_estimates = model.critic(pos_states_tensor, images_tensor)
             next_value_estimates = model.critic(next_states_tensor, next_images_tensor)
@@ -125,26 +129,24 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
 
             total_actor_loss += actor_loss.item()
             total_critic_loss += critic_loss.item()
-            if i % 5*batch_size == 0:
-                print(f"Processing batches at {i} out of {len(episodes_data)}", flush=True)
+
 
         print(f"Epoch {epoch+1}/{num_epochs}, Actor Loss: {total_actor_loss / len(episodes_data)}, Critic Loss: {total_critic_loss / len(episodes_data)}", flush=True)
-        if (epoch + 1) % 50 == 0:
+        if (epoch + 1) % 500 == 0:
             model.save_model(f"./checkpoints/actor_weights_epoch_{epoch+1}.pt", f"./checkpoints/critic_weights_epoch_{epoch+1}.pt")
-
+            continue
 
 state_size = 10 
 action_size = 18 
 model = ActorCriticModel(state_size=state_size, action_size=action_size, device=device)
 #agent = Agent(model, start_session=False)
 
-episodes_path = "./parsed_episodes/"
+episodes_path = "./normalized_parsed_episodes/"
 num_episodes = 1
 # This could be done elsewhere but it is sufficiently fast to be done directly here
 episodes_data = load_episode_data(num_episodes, episodes_path)
 #print("Parsing data")
 #episodes_data = torch.load('./pretrain_data.pt')
 print(f"Loaded {len(episodes_data)} episodes", flush=True)
-pretrain_model(episodes_data, model, batch_size=16, num_epochs=250)
-
+pretrain_model(episodes_data, model, batch_size=16, num_epochs=500)
 model.save_model("./checkpoints/actor_weights_final_v1.pt", "./checkpoints/critic_weights_final_v1.pt")
