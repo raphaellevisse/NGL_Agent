@@ -10,8 +10,23 @@ class Agent:
         self.state = None
         self.action = None
         self.reward = None
-        self.x_factor = 1500
-        self.y_factor = 1000
+        self.x_factor = 2000
+        self.y_factor = 1200
+        #self.x_factor = max(abs(0.0), abs(1.0))  # x mouse position
+        #self.y_factor = max(abs(0.0), abs(1.0))  # y mouse position
+
+        self.delta_x_factor = 5000  # delta_position_x
+        self.delta_y_factor = 5000  # delta_position_y
+        self.delta_z_factor = 10 # delta_position_z
+
+        self.delta_crossSectionScale_factor = 100  # delta_crossSectionScale
+
+        self.delta_q1_factor = 1  # delta_projectionOrientation_q1
+        self.delta_q2_factor = 1  # delta_projectionOrientation_q2
+        self.delta_q3_factor = 1  # delta_projectionOrientation_q3
+        self.delta_q4_factor = 1  # delta_projectionOrientation_q4
+
+        self.delta_projectionScale_factor = 1  # delta_projectionScale
         self.sleep_time = 1 # time between actions
         if start_session:
             self.chrome_ngl = ChromeNGL(headless=headless)
@@ -179,11 +194,13 @@ class Agent:
         # To call this function, we need to start the session first. Then it will change states and take screenshots
         parsed_data = []
         parsed_images = []
+
         for i in range(0, len(episode)-1):
+
             self.chrome_ngl.change_JSON_state_url(json.dumps(episode[i]["state"]))
             # we build the action that leads from the previous state to the current state
             # We need to be careful here, the recording saves the action that led to the state with it, not the action taken in the state
-            pos_state, curr_image, json_state = self.prepare_state(image_path=f"{save_path}/screenshots/" + str(i) + ".png")
+            
         
             next_episode = episode[i+1]
             current_episode = episode[i]
@@ -202,16 +219,22 @@ class Agent:
                 0.0, 0.0, 0.0, 0.0,  # delta_projectionOrientation_q1, q2, q3, q4
                 0.0  # delta_projectionScale
             ]
+            # Discrete actions are in order: left_click, right_click, double_click, Shift, Ctrl, Alt, JSON_change
+            # Continuous actions are in order: x, y, delta_position_x, delta_position_y, delta_position_z, delta_crossSectionScale, delta_projectionOrientation_q1, q2, q3, q4, delta_projectionScale
             screen_action=False
-            if "Left Click" in next_action:
+            if "Double Click" in next_action:
+                output_vector[2] = 1
+                screen_action=True   
+                # double click seems to need a refresh for the neurons to appear, why ?  
+                self.chrome_ngl.refresh()
+                time.sleep(1)
+            elif "Left Click" in next_action:
                 output_vector[0] = 1  
                 screen_action=True
             elif "Right Click" in next_action:
                 output_vector[1] = 1  
                 screen_action=True
-            elif "Double Click" in next_action:
-                output_vector[2] = 1
-                screen_action=True     
+
             if "Relative position" in next_action:
                 position_data = next_action.split("Relative position: ")[1].split(" with keys:")[0]
                 
@@ -237,24 +260,26 @@ class Agent:
             
             
                 delta_pos = [
-                    next_state["position"][0] - current_state["position"][0],
-                    next_state["position"][1] - current_state["position"][1],
-                    next_state["position"][2] - current_state["position"][2]
+                    (next_state["position"][0] - current_state["position"][0]) / self.delta_x_factor,
+                    (next_state["position"][1] - current_state["position"][1]) / self.delta_y_factor,
+                    (next_state["position"][2] - current_state["position"][2]) / self.delta_z_factor
                 ]
                 output_vector[9], output_vector[10], output_vector[11] = delta_pos
                 
-                output_vector[12] = next_state["crossSectionScale"] - current_state["crossSectionScale"]
+                output_vector[12] = (next_state["crossSectionScale"] - current_state["crossSectionScale"]) / self.delta_crossSectionScale_factor
                 
                 delta_orientation = [
-                    next_state["projectionOrientation"][0] - current_state["projectionOrientation"][0],
-                    next_state["projectionOrientation"][1] - current_state["projectionOrientation"][1],
-                    next_state["projectionOrientation"][2] - current_state["projectionOrientation"][2],
-                    next_state["projectionOrientation"][3] - current_state["projectionOrientation"][3]
+                    (next_state["projectionOrientation"][0] - current_state["projectionOrientation"][0]) / self.delta_q1_factor,
+                    (next_state["projectionOrientation"][1] - current_state["projectionOrientation"][1]) / self.delta_q2_factor,
+                    (next_state["projectionOrientation"][2] - current_state["projectionOrientation"][2]) / self.delta_q3_factor,
+                    (next_state["projectionOrientation"][3] - current_state["projectionOrientation"][3]) / self.delta_q4_factor
                 ]
                 output_vector[13], output_vector[14], output_vector[15], output_vector[16] = delta_orientation
                 
-                output_vector[17] = current_state["projectionScale"] - current_state["projectionScale"]
-                
+                output_vector[17] = (current_state["projectionScale"] - current_state["projectionScale"]) / self.delta_projectionScale_factor
+            
+            pos_state, curr_image, json_state = self.prepare_state(image_path=f"{save_path}/screenshots/" + str(i) + ".png")
+
             parsed_data.append({
                 "pos_state": pos_state,  # original state for reference
                 "action_vector": tuple(output_vector),  # encoded action vector
@@ -274,11 +299,14 @@ class Agent:
 if __name__ == "__main__":
     rl_agent = Agent(start_session=True)
     rl_agent.chrome_ngl.start_neuroglancer_session()
-    for i in range(12, 14):
+    time.sleep(1)
+    print("Session started")
+    for i in range(9, 10):
         file_path = f"./episodes/episode_{i}.json"
         with open(file_path, "r") as file:
             data = json.load(file)
-        save_path = f"./parsed_episodes/episode_{i}/"
+        save_path = f"./normalized_parsed_episodes/episode_{i}/"
+
         rl_agent.parse_episode(data, save_path)
         print("Episode completed")
     time.sleep(5)

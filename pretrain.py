@@ -99,10 +99,13 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
 
             discrete_probs, continuous_probs = model.actor(pos_states_tensor, images_tensor)
             #print("Probs shape",discrete_probs.shape, continuous_probs.shape, flush=True)
-            decision_logits= model.build_output_logits(discrete_probs, continuous_probs)
-            #print(decision_logits.shape, actions_tensor.shape)
-
-            actor_loss = torch.nn.CrossEntropyLoss()(decision_logits, actions_tensor)
+            
+            discrete_actions, continuous_actions = model.discrete_continuous_from_actions(actions_tensor)
+            #print("Predicted actions", discrete_probs[0,:], continuous_probs[0,:], flush=True)
+            #print("Actual actions", discrete_actions[0,:], continuous_actions[0,:], flush=True)
+            discrete_loss = model.discrete_loss_fn(discrete_probs, discrete_actions)
+            continuous_loss = model.continuous_loss_fn(continuous_probs, continuous_actions)
+            actor_loss = discrete_loss + continuous_loss
             #print("Actor loss is ", actor_loss, flush=True)
             value_estimates = model.critic(pos_states_tensor, images_tensor)
             next_value_estimates = model.critic(next_states_tensor, next_images_tensor)
@@ -128,22 +131,22 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
                 print(f"Processing batches at {i} out of {len(episodes_data)}", flush=True)
 
         print(f"Epoch {epoch+1}/{num_epochs}, Actor Loss: {total_actor_loss / len(episodes_data)}, Critic Loss: {total_critic_loss / len(episodes_data)}", flush=True)
-        if (epoch + 1) % 50 == 0:
-            model.save_model(f"./checkpoints/actor_weights_epoch_{epoch+1}.pt", f"./checkpoints/critic_weights_epoch_{epoch+1}.pt")
-
+        if (epoch + 1) % 500 == 0:
+            #model.save_model(f"./checkpoints/actor_weights_epoch_{epoch+1}.pt", f"./checkpoints/critic_weights_epoch_{epoch+1}.pt")
+            continue
 
 state_size = 10 
 action_size = 18 
 model = ActorCriticModel(state_size=state_size, action_size=action_size, device=device)
 #agent = Agent(model, start_session=False)
 
-episodes_path = "./parsed_episodes/"
-num_episodes = 13
+episodes_path = "./normalized_parsed_episodes/"
+num_episodes = 1
 # This could be done elsewhere but it is sufficiently fast to be done directly here
 episodes_data = load_episode_data(num_episodes, episodes_path)
 #print("Parsing data")
 #episodes_data = torch.load('./pretrain_data.pt')
 print(f"Loaded {len(episodes_data)} episodes", flush=True)
-pretrain_model(episodes_data, model, batch_size=64, num_epochs=1000)
+pretrain_model(episodes_data, model, batch_size=16, num_epochs=1000)
 
-model.save_model("./checkpoints/actor_weights_final_v1.pt", "./checkpoints/critic_weights_final_v1.pt")
+#model.save_model("./checkpoints/actor_weights_final_v1.pt", "./checkpoints/critic_weights_final_v1.pt")
