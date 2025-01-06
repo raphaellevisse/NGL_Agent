@@ -6,6 +6,7 @@ import random
 from collections import deque
 from torchvision import transforms
 from Values import Values
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 class ActorNetwork(nn.Module):
     def __init__(self, discrete_dim, continuous_dim, image_width=480, image_height=270):
@@ -156,13 +157,14 @@ class ActorCriticModel:
         self.target_actor = ActorNetwork(discrete_dim, continuous_dim).to(self.device)
         self.target_critic = CriticNetwork().to(self.device)
 
-        # Copy weights from the main networks to the target networks
+       
         self.target_actor.load_state_dict(self.actor.state_dict())
         self.target_critic.load_state_dict(self.critic.state_dict())
 
         self.optimizer_actor = optim.Adam(self.actor.parameters(), lr=0.001)
         self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=0.001)
-
+        self.scheduler_actor = ReduceLROnPlateau(self.optimizer_actor, mode='min', factor=0.5, patience=10, verbose=True)  # Decrease lr by half if no improvement in 10 epochs
+        self.scheduler_critic = ReduceLROnPlateau(self.optimizer_critic, mode='min', factor=0.5, patience=10, verbose=True)
         self.discrete_loss_fn = torch.nn.CrossEntropyLoss()
         self.continuous_loss_fn = torch.nn.MSELoss()
 
@@ -245,17 +247,18 @@ class ActorCriticModel:
 
         return discrete_actions, continuous_actions
 
-    def store_experience(self, pos_state, image, action, reward, next_pos_state, next_image, done):
+    def store_experience(self, pos_state, image, discrete_probs, continuous_probs,reward, next_pos_state, next_image, done):
         """
         Store an experience in replay memory.
         """
-        self.memory.append((pos_state, image, action, reward, next_pos_state, next_image, done))
+        self.memory.append((pos_state, image, discrete_probs, continuous_probs, reward, next_pos_state, next_image, done))
 
-    def train(self):
+    def train(self, batch_size=64):
         """
         Train both the actor and critic networks using experiences from the replay memory.
         """
-        if len(self.memory) < self.batch_size:
+        if len(self.memory) < batch_size:
+            print("Not enough experiences in memory to train!")
             return
 
         # Sample a batch of experiences
@@ -264,57 +267,37 @@ class ActorCriticModel:
 
         rewards = torch.tensor(rewards, dtype=torch.float32).to(self.device)
         dones = torch.tensor(dones, dtype=torch.float32).to(self.device)
+        discrete_probs = torch.tensor(discrete_probs, dtype=torch.float32).to(self.device)
+        continuous_probs = torch.tensor(continuous_probs, dtype=torch.float32).to(self.device)
+        #actions = torch.tensor(actions, dtype=torch.float32).to(self.device)
         state_tensors = torch.cat([self.preprocess_state(s) for s in states]).to(self.device)
         image_tensors = torch.cat([self.preprocess_image(img) for img in images]).to(self.device)
         next_state_tensors = torch.cat([self.preprocess_state(ns) for ns in next_states]).to(self.device)
         next_image_tensors = torch.cat([self.preprocess_image(nimg) for nimg in next_images]).to(self.device)
 
-        # Get state values from the critic network
+        # Calculating Critic loss
         state_values = self.critic(state_tensors, image_tensors)
-
-        with torch.no_grad():
-            next_state_values = self.target_critic(next_state_tensors, next_image_tensors).squeeze(1)
-            # print("Next state shape", next_state_values.shape)
-            # print("Dones shape", dones.shape)
-            # print("Rewards shape", rewards.shape)
-            targets = rewards + self.gamma * next_state_values * (1 - dones)
-
-        # Calculate the critic loss (mean squared error between predicted and target state values)
-        critic_loss = nn.MSELoss()(state_values, targets)
+        next_state_values = self.target_critic(next_state_tensors, next_image_tensors).squeeze(1)
+        targets = rewards + self.gamma * next_state_values * (1 - dones)
+        td_error = targets - state_values.squeeze(1)
+        critic_loss = torch.mean(td_error ** 2)
 
         self.optimizer_critic.zero_grad()
         critic_loss.backward()
         self.optimizer_critic.step()
 
-        # Compute advantages
-        advantages = targets - state_values.detach()
-
-        # Get action distributions from the actor network
-        # Compute advantages
-        advantages = (targets - state_values.detach()).squeeze(1)  # Ensure proper shape
-
-        # Get action distributions and continuous outputs from the actor
-        predicted_discrete_actions, predicted_continuous_actions = self.actor(state_tensors, image_tensors)
+        # Calculating Actor loss
+        #     First step is to compute advantages
+        advantages = td_error.detach()
         
-        #print("actions is of shape", actions.shape)
-        #print("Actions is of shape", actions)
-        # For discrete actions, we will get the index of the action with the highest probability
-        # For discrete actions, concatenate the action probabilities (or logits) from the batch
-        actions_discrete = torch.cat([a[0] for a in actions], dim=0).to(self.device)
-        actions_discrete = (actions_discrete == actions_discrete.max(dim=-1, keepdim=True)[0]).float() #converting it into one type of action (one-hot encoding) 
-        actions_continuous = torch.cat([a[1] for a in actions], dim=0).to(self.device)
 
-        predicted_discrete_actions, predicted_continuous_actions = self.actor(state_tensors, image_tensors)
+        log_probs = torch.log(discrete_probs + 1e-10) 
+        discrete_loss = -torch.sum(log_probs * discrete_probs, dim=1)
+        discrete_loss = torch.mean(discrete_loss * advantages) 
 
-        # Calculate discrete loss
-        log_probs = torch.log(predicted_discrete_actions + 1e-10)  # Avoid log(0)
-        discrete_loss = -torch.sum(log_probs * actions_discrete, dim=1)  # Weighted by actual actions
-        discrete_loss = torch.mean(discrete_loss * advantages)  # Weighted by advantages
+       
+        continuous_loss = nn.MSELoss()(continuous_probs, continuous_probs)
 
-        # Calculate continuous loss
-        continuous_loss = nn.MSELoss()(predicted_continuous_actions, actions_continuous)
-
-        # Total loss for actor
         actor_loss = discrete_loss + continuous_loss
 
         self.optimizer_actor.zero_grad()
@@ -325,8 +308,9 @@ class ActorCriticModel:
             self.epsilon *= self.epsilon_decay
 
     def build_output_vector(self, discrete_actions, continuous_actions):
-        # set the maximum value to 1 and the rest to 0
-       
+        """
+        # Careful, this uses an argmax on the discrete actions
+        """
         discrete_actions = (discrete_actions == discrete_actions.max()).float()
         discrete_list = discrete_actions.cpu()[0]
         continuous_list = continuous_actions.cpu()[0]
@@ -352,7 +336,7 @@ class ActorCriticModel:
     
     def build_output_logits(self, discrete_actions, continuous_actions):
         """
-        Handles a batch of inputs and generates a batch of output vectors.
+        Handles a batch of actor outputs and generates a batch of output logits.
 
         Args:
             discrete_actions (torch.Tensor): Tensor of shape (batch_size, num_discrete_actions).
@@ -399,3 +383,18 @@ class ActorCriticModel:
         torch.save(self.actor.state_dict(), actor_file)
         torch.save(self.critic.state_dict(), critic_file)
         print("Model weights saved!")
+    
+    def load_model(self, actor_path, critic_path, target_network=True):
+        try:
+            self.actor.load_state_dict(torch.load(actor_path, map_location=self.device))
+            self.actor.eval() 
+            self.critic.load_state_dict(torch.load(critic_path, map_location=self.device))
+            self.critic.eval()
+
+            print("Model weights loaded successfully!")
+            if target_network:
+                print("Updating target networks...")
+                self.target_actor.load_state_dict(self.actor.state_dict())
+                self.target_critic.load_state_dict(self.critic.state_dict())
+        except Exception as e:
+            print(f"Error loading model weights: {e}")

@@ -13,7 +13,7 @@ print(f"Using device: {device}", flush=True)
 def load_episode_data(begin, num_episodes, episodes_path):
     all_episodes = []
     for idx in range(begin, begin + num_episodes):
-        episode_path = f"{episodes_path}/episode_{idx}/data.json"
+        episode_path = f"{episodes_path}/episode_{idx}/data_reparsed.json"
         screenshots_path = f"{episodes_path}/episode_{idx}/screenshots"
         images = []
         with open(episode_path, "r") as f:
@@ -29,7 +29,6 @@ def load_episode_data(begin, num_episodes, episodes_path):
             else:
                 print(f"Screenshot not found at {screenshot_path}")
                 images.append(None)
-
         for i in range(len(episode_data)-1):
             current_state = episode_data[i]
             current_state['screenshot'] = images[i]
@@ -81,51 +80,35 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
                 rewards.append(reward)
                 next_pos_states.append(next_pos_state)
             
-            #print("Preparing tensors", flush=True)
             pos_states_tensor = torch.cat(pos_states, dim=0)
             actions_tensor = torch.stack(actions)
-            #print(actions_tensor[0,:])
             rewards_tensor = torch.stack(rewards)
             next_states_tensor = torch.cat(next_pos_states, dim=0)
             images_tensor = torch.stack(images).squeeze(1)
             next_images_tensor = torch.stack(next_images).squeeze(1)
-            # print("Tensors prepared", flush=True)
-            # print("Pos states shape", pos_states_tensor.shape, flush=True)
-            # print("Actions shape", actions_tensor.shape, flush=True)
-            # print("Rewards shape", rewards_tensor.shape, flush=True)
-            # print("Next states shape", next_states_tensor.shape, flush=True)
-            # print("Images shape", images_tensor.shape, flush=True)
-            # print("Next images shape", next_images_tensor.shape, flush=True)
 
-            # Train the Actor (Imitation learning)
-            
             discrete_probs, continuous_probs = model.actor(pos_states_tensor, images_tensor)
-            #print("Probs shape",discrete_probs.shape, continuous_probs.shape, flush=True)
-            
+     
             discrete_actions, continuous_actions = model.discrete_continuous_from_actions(actions_tensor)
-            #if (epoch+1) % 10 == 0:
-            print("Predicted actions", discrete_probs[0,:], continuous_probs[0,:], flush=True)
-            print("Actual actions", discrete_actions[0,:], continuous_actions[0,:], flush=True)
-            #print("Predicted actions", discrete_probs[0,:], continuous_probs[0,:], flush=True)
-            #print("Actual actions", discrete_actions[0,:], continuous_actions[0,:], flush=True)
+            if i==0 and (epoch+1) % 10 == 0:
+                print("Predicted actions", discrete_probs[0,:], continuous_probs[0,:], flush=True)
+                print("Actual actions", discrete_actions[0,:], continuous_actions[0,:], flush=True)
+                
+            # CALCULATE ACTOR LOSS  
             discrete_loss = model.discrete_loss_fn(discrete_probs, discrete_actions)
             continuous_loss = model.continuous_loss_fn(continuous_probs, continuous_actions)
             actor_loss = discrete_loss + continuous_loss
-            #print("Actor loss is ", actor_loss, flush=True)
+            # CALCULATE CRITIC LOSS
             value_estimates = model.critic(pos_states_tensor, images_tensor)
             next_value_estimates = model.critic(next_states_tensor, next_images_tensor)
             
-            # Calculate TD error
             td_error = rewards_tensor + gamma * next_value_estimates - value_estimates
-            critic_loss = torch.mean(td_error ** 2)  # MSE loss for critic
-
-            total_loss = actor_loss + critic_loss
+            critic_loss = torch.mean(td_error ** 2) 
             
+            # BACKPROPAGATE 
             model.optimizer_actor.zero_grad()
             actor_loss.backward()
             model.optimizer_actor.step()
-
-            # Optimize critic
             model.optimizer_critic.zero_grad()
             critic_loss.backward()
             model.optimizer_critic.step()
@@ -135,8 +118,10 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
         
 
         print(f"Epoch {epoch+1}/{num_epochs}, Actor Loss: {total_actor_loss / len(episodes_data)}, Critic Loss: {total_critic_loss / len(episodes_data)}", flush=True)
+        model.scheduler_actor.step(total_actor_loss/len(episodes_data))
+        model.scheduler_critic.step(total_critic_loss/len(episodes_data))
         if (epoch + 1) % 50 == 0:
-            model.save_model(f"./checkpoints/actor_weights_epoch_{epoch+1}_v1.pt", f"./checkpoints/critic_weights_epoch_{epoch+1}_v1.pt")
+            model.save_model(f"./checkpoints/actor_weights_epoch_{epoch+1}_v2.pt", f"./checkpoints/critic_weights_epoch_{epoch+1}_v2.pt")
             continue
 
 state_size = 10 
@@ -145,12 +130,12 @@ model = ActorCriticModel(state_size=state_size, action_size=action_size, device=
 #agent = Agent(model, start_session=False)
 
 episodes_path = "./reparsed_episodes/"
-num_episodes = 1
-begin = 1
+num_episodes = 14
+begin = 0
 # This could be done elsewhere but it is sufficiently fast to be done directly here
 episodes_data = load_episode_data(begin, num_episodes, episodes_path)
 #print("Parsing data")
 #episodes_data = torch.load('./pretrain_data.pt')
 print(f"Loaded {len(episodes_data)} episodes", flush=True)
-pretrain_model(episodes_data, model, batch_size=8, num_epochs=1000, gamma=0.9)
-model.save_model("./checkpoints/actor_weights_final_v1.pt", "./checkpoints/critic_weights_final_v1.pt")
+pretrain_model(episodes_data, model, batch_size=64, num_epochs=1000, gamma=0.99)
+model.save_model("./checkpoints/actor_weights_final_v2.pt", "./checkpoints/critic_weights_final_v2.pt")

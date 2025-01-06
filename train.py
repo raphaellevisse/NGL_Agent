@@ -3,11 +3,20 @@ from ActorCritic import ActorCriticModel
 import time
 import torch
 import os
-torch.autograd.set_detect_anomaly(True)
+#torch.autograd.set_detect_anomaly(True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-model = ActorCriticModel(state_size=10, action_size=18, device=device, batch_size=128) # 10 for 9 values and the image, 18 for 18 possible actions
+model = ActorCriticModel(state_size=10, action_size=18, device=device) # 10 for 9 values and the image, 18 for 18 possible actions
+actor_weights = "./checkpoints/actor_weights_epoch_200.pt"
+critic_weights = "./checkpoints/critic_weights_epoch_200.pt"
+if os.path.exists(actor_weights) and os.path.exists(critic_weights):
+    model.load_model(actor_weights, critic_weights)
+    print("Model loaded successfully.")
+model.actor.eval()
+model.critic.eval()
+model.target_actor.eval()
+model.target_critic.eval()
 
 agent = Agent(headless=False, start_session=True)
 agent.chrome_ngl.start_neuroglancer_session()
@@ -27,27 +36,25 @@ for episode in range(num_episodes):
 
     for step in range(max_steps):
         print(f"Episode {episode + 1}/{num_episodes}, Step {step + 1}/{max_steps}")
-        # Select action
-        #print("Making decision...")
+        # 1. Interact with the environment and collect data
         pos_state, curr_image, json_state = agent.prepare_state()
 
         discrete_probs, continuous_probs = model.action(pos_state, curr_image)
-        #print("Probs are", discrete_probs, continuous_probs)
-        output_vector = model.build_output_vector(discrete_probs, continuous_probs)
-        agent.apply_actions(output_vector, json_state) # the ouput vector will either do a click or shift the view via the json state
 
-        action_probs = [discrete_probs, continuous_probs]
+        output_vector = model.build_output_vector(discrete_probs, continuous_probs)
+        agent.apply_actions(output_vector, json_state) # the output vector will either do a click or shift the view via the json state
+
         next_pos_state, next_image, next_json_state = agent.prepare_state()
         reward = model.reward(next_json_state)
 
         done = False
-        model.store_experience(pos_state, curr_image, action_probs, reward, next_pos_state, next_image, done)
+        model.store_experience(pos_state, curr_image, discrete_probs, continuous_probs, reward, next_pos_state, next_image, done)
         
         pos_state = next_pos_state
         image = next_image
         total_reward += reward
-
-        
+    print(f"Episode {episode + 1}/{num_episodes}, Total Reward: {total_reward}, Epsilon: {model.epsilon}")
+    continue
     print("Training model at end of episode...")
     model.train()
     
@@ -58,6 +65,6 @@ for episode in range(num_episodes):
 
     if (episode+1) % 50 == 0:
         model.save_model(f"./checkpoints/train_actor_weights_episode_{episode+1}.pt", f"./checkpoints/train_critic_weights_episode_{episode+1}.pt")
-    print(f"Episode {episode + 1}/{num_episodes}, Total Reward: {total_reward}, Epsilon: {model.epsilon}")
+    
 
 time.sleep(100)
