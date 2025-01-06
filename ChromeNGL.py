@@ -35,7 +35,7 @@ class ChromeNGL:
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option("useAutomationExtension", False)
         chrome_options.add_experimental_option("excludeSwitches",["enable-automation"])  
-        chrome_service = Service("chromedriver-mac-arm64/chromedriver")
+        chrome_service = Service("chromedriver-win64/chromedriver.exe")
         self.driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
         self.init_url = 'https://accounts.google.com/Login'
         '''---------------------------------'''

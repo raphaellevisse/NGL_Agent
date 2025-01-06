@@ -138,7 +138,7 @@ model = ActorCriticModel(state_size=state_size, action_size=action_size, device=
 #agent = Agent(model, start_session=False)
 
 episodes_path = "./parsed_episodes/"
-num_episodes = 13
+num_episodes = 1
 # This could be done elsewhere but it is sufficiently fast to be done directly here
 episodes_data = load_episode_data(num_episodes, episodes_path)
 #print("Parsing data")
