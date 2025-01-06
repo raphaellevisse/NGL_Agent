@@ -96,7 +96,7 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
             # print("Next images shape", next_images_tensor.shape, flush=True)
 
             # Train the Actor (Imitation learning)
-
+            
             discrete_probs, continuous_probs = model.actor(pos_states_tensor, images_tensor)
             #print("Probs shape",discrete_probs.shape, continuous_probs.shape, flush=True)
             
@@ -127,12 +127,11 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
 
             total_actor_loss += actor_loss.item()
             total_critic_loss += critic_loss.item()
-            if i % 5*batch_size == 0:
-                print(f"Processing batches at {i} out of {len(episodes_data)}", flush=True)
+
 
         print(f"Epoch {epoch+1}/{num_epochs}, Actor Loss: {total_actor_loss / len(episodes_data)}, Critic Loss: {total_critic_loss / len(episodes_data)}", flush=True)
         if (epoch + 1) % 500 == 0:
-            #model.save_model(f"./checkpoints/actor_weights_epoch_{epoch+1}.pt", f"./checkpoints/critic_weights_epoch_{epoch+1}.pt")
+            model.save_model(f"./checkpoints/actor_weights_epoch_{epoch+1}.pt", f"./checkpoints/critic_weights_epoch_{epoch+1}.pt")
             continue
 
 state_size = 10 
@@ -147,6 +146,5 @@ episodes_data = load_episode_data(num_episodes, episodes_path)
 #print("Parsing data")
 #episodes_data = torch.load('./pretrain_data.pt')
 print(f"Loaded {len(episodes_data)} episodes", flush=True)
-pretrain_model(episodes_data, model, batch_size=16, num_epochs=1000)
-
-#model.save_model("./checkpoints/actor_weights_final_v1.pt", "./checkpoints/critic_weights_final_v1.pt")
+pretrain_model(episodes_data, model, batch_size=16, num_epochs=500)
+model.save_model("./checkpoints/actor_weights_final_v1.pt", "./checkpoints/critic_weights_final_v1.pt")

@@ -5,6 +5,7 @@ import numpy as np
 import random
 from collections import deque
 from torchvision import transforms
+from Values import Values
 
 class ActorNetwork(nn.Module):
     def __init__(self, discrete_dim, continuous_dim, image_width=480, image_height=270):
@@ -136,6 +137,7 @@ class CriticNetwork(nn.Module):
 
 class ActorCriticModel:
     def __init__(self, state_size, action_size, device="cpu"):
+        self.values = Values()
         self.state_size = state_size
         self.action_size = action_size
         self.device = device
@@ -172,10 +174,25 @@ class ActorCriticModel:
         self.epsilon_min = 0.01
         self.batch_size = 32
         self.memory = deque(maxlen=2000)
+        
 
     def preprocess_state(self, state):
+
         position, crossSectionScale, projectionOrientation, projectionScale = state
-        state_vector = position + [crossSectionScale] + projectionOrientation + [projectionScale]
+        norm_position = [
+        position[0] / self.values.position_x_factor,
+        position[1] / self.values.position_y_factor,
+        position[2] / self.values.position_z_factor,
+        ]
+        norm_crossSectionScale = crossSectionScale / self.values.crossSectionScale_factor
+        norm_projectionOrientation = [
+        projectionOrientation[0] / self.values.projectionOrientation_q1_factor,
+        projectionOrientation[1] / self.values.projectionOrientation_q2_factor,
+        projectionOrientation[2] / self.values.projectionOrientation_q3_factor,
+        projectionOrientation[3] / self.values.projectionOrientation_q4_factor,
+        ]
+        norm_projectionScale = projectionScale / self.values.projectionScale_factor
+        state_vector = norm_position + [norm_crossSectionScale] + norm_projectionOrientation + [norm_projectionScale]
         return torch.tensor(state_vector, dtype=torch.float32).unsqueeze(0).to(self.device)
 
     def preprocess_image(self, image):

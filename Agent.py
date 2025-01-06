@@ -3,30 +3,16 @@ from utils import parse_action
 import time
 import json
 import torch
+from Values import Values
 
 class Agent:
     def __init__(self, model=None, headless=False, start_session: bool = False):
+        self.values = Values()
         self.action_history = []
         self.state = None
         self.action = None
         self.reward = None
-        self.x_factor = 2000
-        self.y_factor = 1200
-        #self.x_factor = max(abs(0.0), abs(1.0))  # x mouse position
-        #self.y_factor = max(abs(0.0), abs(1.0))  # y mouse position
 
-        self.delta_x_factor = 5000  # delta_position_x
-        self.delta_y_factor = 5000  # delta_position_y
-        self.delta_z_factor = 10 # delta_position_z
-
-        self.delta_crossSectionScale_factor = 100  # delta_crossSectionScale
-
-        self.delta_q1_factor = 1  # delta_projectionOrientation_q1
-        self.delta_q2_factor = 1  # delta_projectionOrientation_q2
-        self.delta_q3_factor = 1  # delta_projectionOrientation_q3
-        self.delta_q4_factor = 1  # delta_projectionOrientation_q4
-
-        self.delta_projectionScale_factor = 1  # delta_projectionScale
         self.sleep_time = 1 # time between actions
         if start_session:
             self.chrome_ngl = ChromeNGL(headless=headless)
@@ -48,8 +34,10 @@ class Agent:
         curr_image = self.chrome_ngl.get_screenshot(image_path)
         if verbose:
             print("Current state:", pos_state)
+        #normalized_pos_state = self.normalize_pos_state(pos_state)
         return pos_state, curr_image, json_state
   
+
     def decision(self):
         # TO NOT BE USED IN THE FINAL VERSION
         # make a decision based on the current state
@@ -244,8 +232,8 @@ class Agent:
                 x = int(position_parts[0].replace("x=", "").strip())  # Remove "x=" prefix
                 y = int(position_parts[1].strip())  # Directly parse y value
                 
-                output_vector[3] = x / self.x_factor
-                output_vector[4] = y / self.y_factor
+                output_vector[3] = x / self.values.x_factor
+                output_vector[4] = y / self.values.y_factor
             
             if "Shift" in next_action:
                 output_vector[5] = 1  # key_Shift
@@ -260,23 +248,23 @@ class Agent:
             
             
                 delta_pos = [
-                    (next_state["position"][0] - current_state["position"][0]) / self.delta_x_factor,
-                    (next_state["position"][1] - current_state["position"][1]) / self.delta_y_factor,
-                    (next_state["position"][2] - current_state["position"][2]) / self.delta_z_factor
+                    (next_state["position"][0] - current_state["position"][0]) / self.values.delta_x_factor,
+                    (next_state["position"][1] - current_state["position"][1]) / self.values.delta_y_factor,
+                    (next_state["position"][2] - current_state["position"][2]) / self.values.delta_z_factor
                 ]
                 output_vector[9], output_vector[10], output_vector[11] = delta_pos
                 
-                output_vector[12] = (next_state["crossSectionScale"] - current_state["crossSectionScale"]) / self.delta_crossSectionScale_factor
+                output_vector[12] = (next_state["crossSectionScale"] - current_state["crossSectionScale"]) / self.values.delta_crossSectionScale_factor
                 
                 delta_orientation = [
-                    (next_state["projectionOrientation"][0] - current_state["projectionOrientation"][0]) / self.delta_q1_factor,
-                    (next_state["projectionOrientation"][1] - current_state["projectionOrientation"][1]) / self.delta_q2_factor,
-                    (next_state["projectionOrientation"][2] - current_state["projectionOrientation"][2]) / self.delta_q3_factor,
-                    (next_state["projectionOrientation"][3] - current_state["projectionOrientation"][3]) / self.delta_q4_factor
+                    (next_state["projectionOrientation"][0] - current_state["projectionOrientation"][0]) / self.values.delta_q1_factor,
+                    (next_state["projectionOrientation"][1] - current_state["projectionOrientation"][1]) / self.values.delta_q2_factor,
+                    (next_state["projectionOrientation"][2] - current_state["projectionOrientation"][2]) / self.values.delta_q3_factor,
+                    (next_state["projectionOrientation"][3] - current_state["projectionOrientation"][3]) / self.values.delta_q4_factor
                 ]
                 output_vector[13], output_vector[14], output_vector[15], output_vector[16] = delta_orientation
                 
-                output_vector[17] = (current_state["projectionScale"] - current_state["projectionScale"]) / self.delta_projectionScale_factor
+                output_vector[17] = (current_state["projectionScale"] - current_state["projectionScale"]) / self.values.delta_projectionScale_factor
             
             pos_state, curr_image, json_state = self.prepare_state(image_path=f"{save_path}/screenshots/" + str(i) + ".png")
 
