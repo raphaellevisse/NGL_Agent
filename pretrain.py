@@ -121,7 +121,7 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
         model.scheduler_actor.step(total_actor_loss/len(episodes_data))
         model.scheduler_critic.step(total_critic_loss/len(episodes_data))
         if (epoch + 1) % 50 == 0:
-            model.save_model(f"./checkpoints/actor_weights_epoch_{epoch+1}_v2.pt", f"./checkpoints/critic_weights_epoch_{epoch+1}_v2.pt")
+            model.save_model(f"./checkpoints/actor_weights_epoch_{epoch+1}_v3.pt", f"./checkpoints/critic_weights_epoch_{epoch+1}_v3.pt")
             continue
 
 state_size = 10 
@@ -138,4 +138,4 @@ episodes_data = load_episode_data(begin, num_episodes, episodes_path)
 #episodes_data = torch.load('./pretrain_data.pt')
 print(f"Loaded {len(episodes_data)} episodes", flush=True)
 pretrain_model(episodes_data, model, batch_size=64, num_epochs=1000, gamma=0.99)
-model.save_model("./checkpoints/actor_weights_final_v2.pt", "./checkpoints/critic_weights_final_v2.pt")
+model.save_model("./checkpoints/actor_weights_final_v3.pt", "./checkpoints/critic_weights_final_v3.pt")

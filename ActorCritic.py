@@ -165,6 +165,7 @@ class ActorCriticModel:
         self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=0.001)
         self.scheduler_actor = ReduceLROnPlateau(self.optimizer_actor, mode='min', factor=0.5, patience=10, verbose=True)  # Decrease lr by half if no improvement in 10 epochs
         self.scheduler_critic = ReduceLROnPlateau(self.optimizer_critic, mode='min', factor=0.5, patience=10, verbose=True)
+
         self.discrete_loss_fn = torch.nn.CrossEntropyLoss()
         self.continuous_loss_fn = torch.nn.MSELoss()
 
@@ -226,24 +227,25 @@ class ActorCriticModel:
         image_tensor = transform(image).unsqueeze(0).to(self.device)  # Add batch dimension
         return image_tensor
 
-    def action(self, pos_state, image):
+    def action(self, pos_state, image, eval=False):
         """
         Choose an action based on the current policy (epsilon-greedy).
         """
-        if np.random.rand() <= self.epsilon:
-            print("Epsilon search:", self.epsilon)
-            discrete_actions = torch.zeros(1, len(self.discrete_action_indices)).to(self.device)
-            random_action_index = random.randint(0, discrete_actions.shape[1] - 1)
-            discrete_actions[0, random_action_index] = 1
-            continuous_actions = torch.rand(1, len(self.continuous_action_indices)).to(self.device)
-            return discrete_actions, continuous_actions
+        if not eval:
+            # Epsilon-greedy exploration
+            if np.random.rand() <= self.epsilon:
+                print("Epsilon search:", self.epsilon)
+                discrete_actions = torch.zeros(1, len(self.discrete_action_indices)).to(self.device)
+                random_action_index = random.randint(0, discrete_actions.shape[1] - 1)
+                discrete_actions[0, random_action_index] = 1
+                continuous_actions = torch.rand(1, len(self.continuous_action_indices)).to(self.device)
+                return discrete_actions, continuous_actions
         
         state_tensor = self.preprocess_state(pos_state)
+        
         image_tensor = self.preprocess_image(image)
 
-        with torch.no_grad():
-            discrete_actions, continuous_actions = self.actor(state_tensor, image_tensor)
-
+        discrete_actions, continuous_actions = self.actor(state_tensor, image_tensor)
 
         return discrete_actions, continuous_actions
 

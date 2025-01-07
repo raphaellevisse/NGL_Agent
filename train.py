@@ -8,8 +8,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 model = ActorCriticModel(state_size=10, action_size=18, device=device) # 10 for 9 values and the image, 18 for 18 possible actions
-actor_weights = "./checkpoints/actor_weights_epoch_200.pt"
-critic_weights = "./checkpoints/critic_weights_epoch_200.pt"
+actor_weights = "checkpoints/actor_weights_epoch_1000_v2.pt"
+critic_weights = "checkpoints/critic_weights_epoch_1000_v2.pt"
 if os.path.exists(actor_weights) and os.path.exists(critic_weights):
     model.load_model(actor_weights, critic_weights)
     print("Model loaded successfully.")
@@ -37,9 +37,9 @@ for episode in range(num_episodes):
     for step in range(max_steps):
         print(f"Episode {episode + 1}/{num_episodes}, Step {step + 1}/{max_steps}")
         # 1. Interact with the environment and collect data
-        pos_state, curr_image, json_state = agent.prepare_state()
-
-        discrete_probs, continuous_probs = model.action(pos_state, curr_image)
+        pos_state, curr_image, json_state = agent.prepare_state(image_width=480, image_height=270)
+        
+        discrete_probs, continuous_probs = model.action(pos_state, curr_image, eval=True)
 
         output_vector = model.build_output_vector(discrete_probs, continuous_probs)
         agent.apply_actions(output_vector, json_state) # the output vector will either do a click or shift the view via the json state

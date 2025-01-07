@@ -18,7 +18,7 @@ class Agent:
             self.chrome_ngl = None
 
     
-    def prepare_state(self, image_path=None, verbose=False):
+    def prepare_state(self, image_path=None, verbose=False, image_width=480, image_height=270):
         state = self.chrome_ngl.get_JSON_state()
         json_state = json.loads(state)
         # for now the state we give in just the parsed position, crossSectionScale, projectionOrientation, projectionScale
@@ -27,7 +27,7 @@ class Agent:
         projectionOrientation = json_state["projectionOrientation"]
         projectionScale = json_state["projectionScale"]
         pos_state = [position, crossSectionScale, projectionOrientation, projectionScale]
-        curr_image = self.chrome_ngl.get_screenshot(image_path)
+        curr_image = self.chrome_ngl.get_screenshot(image_path, image_width, image_height)
         if verbose:
             print("Current state:", pos_state)
         return pos_state, curr_image, json_state
@@ -74,20 +74,28 @@ class Agent:
             self.chrome_ngl.mouse_key_action(x, y, "double_click", key_pressed)
         elif json_change:
             print("Decided to change the JSON state")
-
+            old_position = json_state["position"][:]
             json_state["position"][0] += delta_position_x.item()*self.values.delta_x_factor if isinstance(delta_position_x, torch.Tensor) else delta_position_x*self.values.delta_x_factor
             json_state["position"][1] += delta_position_y.item()*self.values.delta_y_factor if isinstance(delta_position_y, torch.Tensor) else delta_position_y*self.values.delta_y_factor
             json_state["position"][2] += delta_position_z.item()*self.values.delta_z_factor if isinstance(delta_position_z, torch.Tensor) else delta_position_z*self.values.delta_z_factor
-            
+            print(f"Position updated: {old_position} -> {json_state['position']}")
+
+            old_crossSectionScale = json_state["crossSectionScale"]
             # crossSectionScale is a multiplicative factor calculated on the previous value: coeff = (new_value - old_value) / old_value
-            json_state["crossSectionScale"] += delta_crossSectionScale.item()*(json_state["crossSectionScale"] + 1e-6)*self.values.crossSectionScale_factor if isinstance(delta_crossSectionScale, torch.Tensor) else delta_crossSectionScale*(json_state["crossSectionScale"] + 1e-6)*self.values.crossSectionScale_factor
-            
+            json_state["crossSectionScale"] += delta_crossSectionScale.item()*(json_state["crossSectionScale"] + 1e-6)*self.values.delta_crossSectionScale_factor if isinstance(delta_crossSectionScale, torch.Tensor) else delta_crossSectionScale*(json_state["crossSectionScale"] + 1e-6)*self.values.delta_crossSectionScale_factor
+            print(f"CrossSectionScale updated: {old_crossSectionScale:.6f} -> {json_state['crossSectionScale']:.6f}")
+
+            old_projectionOrientation = json_state["projectionOrientation"][:]
             json_state["projectionOrientation"][0] += delta_projectionOrientation_q1.item()*self.values.delta_q1_factor if isinstance(delta_projectionOrientation_q1, torch.Tensor) else delta_projectionOrientation_q1*self.values.delta_q1_factor
             json_state["projectionOrientation"][1] += delta_projectionOrientation_q2.item()*self.values.delta_q2_factor if isinstance(delta_projectionOrientation_q2, torch.Tensor) else delta_projectionOrientation_q2*self.values.delta_q2_factor
             json_state["projectionOrientation"][2] += delta_projectionOrientation_q3.item()*self.values.delta_q3_factor if isinstance(delta_projectionOrientation_q3, torch.Tensor) else delta_projectionOrientation_q3*self.values.delta_q3_factor
             json_state["projectionOrientation"][3] += delta_projectionOrientation_q4.item()*self.values.delta_q4_factor if isinstance(delta_projectionOrientation_q4, torch.Tensor) else delta_projectionOrientation_q4*self.values.delta_q4_factor
-            
-            json_state["projectionScale"] += delta_projectionScale.item()*(json_state["projectionScale"] + 1e-6)*self.values.projectionScale_factor if isinstance(delta_projectionScale, torch.Tensor) else delta_projectionScale*(json_state["projectionScale"] + 1e-6)*self.values.projectionScale_factor
+            print(f"ProjectionOrientation updated: {old_projectionOrientation} -> {json_state['projectionOrientation']}")
+
+
+            old_projectionScale = json_state["projectionScale"]
+            json_state["projectionScale"] += delta_projectionScale.item()*(json_state["projectionScale"] + 1e-6)*self.values.delta_projectionScale_factor if isinstance(delta_projectionScale, torch.Tensor) else delta_projectionScale*(json_state["projectionScale"] + 1e-6)*self.values.delta_projectionScale_factor
+            print(f"ProjectionScale updated: {old_projectionScale:.6f} -> {json_state['projectionScale']:.6f}")
 
 
             self.chrome_ngl.change_JSON_state_url(json_state)

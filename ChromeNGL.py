@@ -92,10 +92,10 @@ class ChromeNGL:
         else:
             print("No driver instance found.")
     
-    def get_screenshot(self, save_path: str = None):
+    def get_screenshot(self, save_path: str = None, image_width=480, image_height=270):
         screenshot = self.driver.get_screenshot_as_png()
         image = Image.open(io.BytesIO(screenshot))
-        image = image.resize((960, 540))
+        image = image.resize((image_width, image_height))
         # Optionally save to disk
         if save_path:
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -133,7 +133,7 @@ class ChromeNGL:
             encoded_json = urllib.parse.quote(serialized_json)
             new_url = f"http://localhost:8000/client/#!{encoded_json}"
             self.change_url(new_url)
-            
+
         except Exception as e:
             print("An error occurred:", e)
 
