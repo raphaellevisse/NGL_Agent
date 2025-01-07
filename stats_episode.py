@@ -9,7 +9,7 @@ from PIL import Image
 def load_episode_data(num_episodes, episodes_path):
     all_episodes = []
     for idx in range(0, num_episodes):
-        episode_path = f"{episodes_path}/episode_{idx}/data.json"
+        episode_path = f"{episodes_path}/episode_{idx}/data_reparsed.json"
         screenshots_path = f"{episodes_path}/episode_{idx}/screenshots"
         images = []
         with open(episode_path, "r") as f:
@@ -28,7 +28,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}", flush=True)
 #agent = Agent(model, start_session=False)
 
-episodes_path = "./parsed_episodes/"
+episodes_path = "./reparsed_episodes/"
 num_episodes = 13
 # This could be done elsewhere but it is sufficiently fast to be done directly here
 episodes_data = load_episode_data(num_episodes, episodes_path)
@@ -37,7 +37,6 @@ all_actions = []
 print(len(episodes_data))
 # Iterate through all episodes
 for episode in episodes_data:
-    # Extract action vector and move it to the device
     action = torch.tensor(episode['action_vector'], dtype=torch.float32).to(device)
     
     # Append to the list for global statistics
