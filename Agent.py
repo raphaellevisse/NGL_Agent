@@ -74,31 +74,34 @@ class Agent:
             self.chrome_ngl.mouse_key_action(x, y, "double_click", key_pressed)
         elif json_change:
             print("Decided to change the JSON state")
+            #print("Old JSON state is: ", json_state)
             old_position = json_state["position"][:]
-            json_state["position"][0] += delta_position_x.item()*self.values.delta_x_factor if isinstance(delta_position_x, torch.Tensor) else delta_position_x*self.values.delta_x_factor
-            json_state["position"][1] += delta_position_y.item()*self.values.delta_y_factor if isinstance(delta_position_y, torch.Tensor) else delta_position_y*self.values.delta_y_factor
-            json_state["position"][2] += delta_position_z.item()*self.values.delta_z_factor if isinstance(delta_position_z, torch.Tensor) else delta_position_z*self.values.delta_z_factor
+
+            json_state["position"][0] += delta_position_x*self.values.delta_x_factor 
+            json_state["position"][1] += delta_position_y*self.values.delta_y_factor
+            json_state["position"][2] += delta_position_z*self.values.delta_z_factor
             print(f"Position updated: {old_position} -> {json_state['position']}")
 
             old_crossSectionScale = json_state["crossSectionScale"]
             # crossSectionScale is a multiplicative factor calculated on the previous value: coeff = (new_value - old_value) / old_value
-            json_state["crossSectionScale"] += delta_crossSectionScale.item()*(json_state["crossSectionScale"] + 1e-6)*self.values.delta_crossSectionScale_factor if isinstance(delta_crossSectionScale, torch.Tensor) else delta_crossSectionScale*(json_state["crossSectionScale"] + 1e-6)*self.values.delta_crossSectionScale_factor
+            json_state["crossSectionScale"] += delta_crossSectionScale*(json_state["crossSectionScale"] + 1e-6)*self.values.delta_crossSectionScale_factor
             print(f"CrossSectionScale updated: {old_crossSectionScale:.6f} -> {json_state['crossSectionScale']:.6f}")
 
             old_projectionOrientation = json_state["projectionOrientation"][:]
-            json_state["projectionOrientation"][0] += delta_projectionOrientation_q1.item()*self.values.delta_q1_factor if isinstance(delta_projectionOrientation_q1, torch.Tensor) else delta_projectionOrientation_q1*self.values.delta_q1_factor
-            json_state["projectionOrientation"][1] += delta_projectionOrientation_q2.item()*self.values.delta_q2_factor if isinstance(delta_projectionOrientation_q2, torch.Tensor) else delta_projectionOrientation_q2*self.values.delta_q2_factor
-            json_state["projectionOrientation"][2] += delta_projectionOrientation_q3.item()*self.values.delta_q3_factor if isinstance(delta_projectionOrientation_q3, torch.Tensor) else delta_projectionOrientation_q3*self.values.delta_q3_factor
-            json_state["projectionOrientation"][3] += delta_projectionOrientation_q4.item()*self.values.delta_q4_factor if isinstance(delta_projectionOrientation_q4, torch.Tensor) else delta_projectionOrientation_q4*self.values.delta_q4_factor
+            json_state["projectionOrientation"][0] += delta_projectionOrientation_q1*self.values.delta_q1_factor
+            json_state["projectionOrientation"][1] += delta_projectionOrientation_q2*self.values.delta_q2_factor 
+            json_state["projectionOrientation"][2] += delta_projectionOrientation_q3*self.values.delta_q3_factor 
+            json_state["projectionOrientation"][3] += delta_projectionOrientation_q4*self.values.delta_q4_factor 
             print(f"ProjectionOrientation updated: {old_projectionOrientation} -> {json_state['projectionOrientation']}")
 
 
             old_projectionScale = json_state["projectionScale"]
-            json_state["projectionScale"] += delta_projectionScale.item()*(json_state["projectionScale"] + 1e-6)*self.values.delta_projectionScale_factor if isinstance(delta_projectionScale, torch.Tensor) else delta_projectionScale*(json_state["projectionScale"] + 1e-6)*self.values.delta_projectionScale_factor
+            json_state["projectionScale"] = min(500000, json_state["projectionScale"] + delta_projectionScale*(json_state["projectionScale"] + 1e-6)*self.values.delta_projectionScale_factor)
             print(f"ProjectionScale updated: {old_projectionScale:.6f} -> {json_state['projectionScale']:.6f}")
 
 
             self.chrome_ngl.change_JSON_state_url(json_state)
+            #print("New JSON state is: ", json_state)
         print("Decision acted upon")
 
     def follow_episode(self, episode):
@@ -135,13 +138,15 @@ class Agent:
       self.action_history = []
       self.chrome_ngl.start_neuroglancer_session()
 
-    def parse_episode(self, episode, save_path=None):
+    def parse_episode(self, episode, save_path=None, wait=False):
         # Function for parsing the episode data into a format that can be used for pretraining (imitation learning)
         # To call this function, we need to start the session first. Then it will change states and take screenshots
         parsed_data = []
         parsed_images = []
         for i in range(0, len(episode)-1):
             self.chrome_ngl.change_JSON_state_url(json.dumps(episode[i]["state"]))
+            if wait:
+                time.sleep(2)
             # we build the action that leads from the previous state to the current state
             # We need to be careful here, the recording saves the action that led to the state with it, not the action taken in the state
             next_episode = episode[i+1]
@@ -260,21 +265,26 @@ if __name__ == "__main__":
     rl_agent.chrome_ngl.start_neuroglancer_session()
     #time.sleep(1)
     print("Session started")
-    # for i in range(0, 14):
-    #     file_path = f"./episodes/episode_{i}.json"
-    #     with open(file_path, "r") as file:
-    #         data = json.load(file)
-    #     file_path = f"./reparsed_episodes/episode_{i}/data.json"
-    #     save_path = f"./reparsed_episodes/episode_{i}/data_reparsed.json"
-    #     rl_agent.update_output_vector(file_path, save_path)
-    #     #rl_agent.parse_episode(data, save_path)
-    #     print("Episode completed")
-    # time.sleep(5)
 
-    for i in range(0,14):
-        file_path = f"./episodes/episode_{i}.json"
-        data = json.load(open(file_path, "r"))
-        rl_agent.follow_episode(data)
+
+
+
+    for i in range(0, 3):
+        file_path = f"./episodes/click_only/episode_{i}.json"
+        with open(file_path, "r") as file:
+            data = json.load(file)
+        file_path = f"./reparsed_episodes/click_only/episode_{i}/data.json"
+        #save_path = f"./reparsed_episodes/click_only/episode_{i}/data_reparsed.json"
+        save_path = f"./reparsed_episodes/click_only/episode_{i}/"
+        #rl_agent.update_output_vector(file_path, save_path)
+        rl_agent.parse_episode(data, save_path, wait=True)
+        print("Episode completed")
+    time.sleep(5)
+
+    # for i in range(0,14):
+    #     file_path = f"./episodes/episode_{i}.json"
+    #     data = json.load(open(file_path, "r"))
+    #     rl_agent.follow_episode(data)
 
 
     

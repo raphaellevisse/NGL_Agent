@@ -7,6 +7,7 @@ from collections import deque
 from torchvision import transforms
 from Values import Values
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+import copy
 
 class ActorNetwork(nn.Module):
     def __init__(self, discrete_dim, continuous_dim, image_width=480, image_height=270):
@@ -14,7 +15,7 @@ class ActorNetwork(nn.Module):
         self.width = image_width
         self.height = image_height
         # Common layers for both actor and critic
-        #self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)  # 1920x1080 -> 1920x1080
+        
         self.conv2 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1)  # 960x540 -> 480x270
         self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1) # 480x270 -> 240x135
         self.conv4 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1) # 240x135 -> 120x68
@@ -166,8 +167,8 @@ class ActorCriticModel:
         self.scheduler_actor = ReduceLROnPlateau(self.optimizer_actor, mode='min', factor=0.5, patience=10, verbose=True)  # Decrease lr by half if no improvement in 10 epochs
         self.scheduler_critic = ReduceLROnPlateau(self.optimizer_critic, mode='min', factor=0.5, patience=10, verbose=True)
 
-        self.discrete_loss_fn = torch.nn.CrossEntropyLoss()
-        self.continuous_loss_fn = torch.nn.MSELoss()
+        self.discrete_loss_fn = torch.nn.CrossEntropyLoss(reduction='none')
+        self.continuous_loss_fn = torch.nn.MSELoss(reduction='none')
 
         self.tau = 0.01  # Soft update rate for target networks
 
@@ -180,7 +181,6 @@ class ActorCriticModel:
         
 
     def preprocess_state(self, state):
-
         position, crossSectionScale, projectionOrientation, projectionScale = state
         norm_position = [
         position[0] / self.values.position_x_factor,
@@ -200,23 +200,24 @@ class ActorCriticModel:
     
     def preprocess_action(self, output_vector):
         #print("Output vector before normalization", output_vector)
-        output_vector[3] = output_vector[3] / self.values.x_factor
-        output_vector[4] = output_vector[4] / self.values.y_factor
+        norm_output_vector = copy.deepcopy(output_vector)
+        norm_output_vector[3] = output_vector[3] / self.values.x_factor
+        norm_output_vector[4] = output_vector[4] / self.values.y_factor
         
-        output_vector[9] = output_vector[9] / self.values.delta_x_factor
-        output_vector[10] = output_vector[10] / self.values.delta_y_factor
-        output_vector[11] = output_vector[11] / self.values.delta_z_factor
+        norm_output_vector[9] = output_vector[9] / self.values.delta_x_factor
+        norm_output_vector[10] = output_vector[10] / self.values.delta_y_factor
+        norm_output_vector[11] = output_vector[11] / self.values.delta_z_factor
 
-        output_vector[12] = output_vector[12] / self.values.delta_crossSectionScale_factor
+        norm_output_vector[12] = output_vector[12] / self.values.delta_crossSectionScale_factor
 
-        output_vector[13] = output_vector[13] / self.values.delta_q1_factor
-        output_vector[14] = output_vector[14] / self.values.delta_q2_factor
-        output_vector[15] = output_vector[15] / self.values.delta_q3_factor
-        output_vector[16] = output_vector[16] / self.values.delta_q4_factor
+        norm_output_vector[13] = output_vector[13] / self.values.delta_q1_factor
+        norm_output_vector[14] = output_vector[14] / self.values.delta_q2_factor
+        norm_output_vector[15] = output_vector[15] / self.values.delta_q3_factor
+        norm_output_vector[16] = output_vector[16] / self.values.delta_q4_factor
 
-        output_vector[17] = output_vector[17] / self.values.delta_projectionScale_factor
-        #print("Output vector after normalization", output_vector)
-        return output_vector
+        norm_output_vector[17] = output_vector[17] / self.values.delta_projectionScale_factor
+        #norm_output_tensor = torch.tensor(norm_output_vector)
+        return norm_output_vector
 
     def preprocess_image(self, image):
         transform = transforms.Compose([
@@ -231,23 +232,25 @@ class ActorCriticModel:
         """
         Choose an action based on the current policy (epsilon-greedy).
         """
-        if not eval:
-            # Epsilon-greedy exploration
-            if np.random.rand() <= self.epsilon:
-                print("Epsilon search:", self.epsilon)
-                discrete_actions = torch.zeros(1, len(self.discrete_action_indices)).to(self.device)
-                random_action_index = random.randint(0, discrete_actions.shape[1] - 1)
-                discrete_actions[0, random_action_index] = 1
-                continuous_actions = torch.rand(1, len(self.continuous_action_indices)).to(self.device)
-                return discrete_actions, continuous_actions
-        
-        state_tensor = self.preprocess_state(pos_state)
-        
-        image_tensor = self.preprocess_image(image)
+        print("ActorCritic action is not ready to be used and has to be rebuilt for correct epsilon-search.")
 
-        discrete_actions, continuous_actions = self.actor(state_tensor, image_tensor)
+        # if not eval:
+        #     # Epsilon-greedy exploration
+        #     if np.random.rand() <= self.epsilon:
+        #         print("Epsilon search:", self.epsilon)
+        #         discrete_actions = torch.zeros(1, len(self.discrete_action_indices)).to(self.device)
+        #         random_action_index = random.randint(0, discrete_actions.shape[1] - 1)
+        #         discrete_actions[0, random_action_index] = 1
+        #         continuous_actions = torch.rand(1, len(self.continuous_action_indices)).to(self.device)
+        #         return discrete_actions, continuous_actions
+        
+        # state_tensor = self.preprocess_state(pos_state)
+        
+        # image_tensor = self.preprocess_image(image)
 
-        return discrete_actions, continuous_actions
+        # discrete_actions, continuous_actions = self.actor(state_tensor, image_tensor)
+
+        # return discrete_actions, continuous_actions
 
     def store_experience(self, pos_state, image, discrete_probs, continuous_probs,reward, next_pos_state, next_image, done):
         """
@@ -370,6 +373,12 @@ class ActorCriticModel:
 
         return z_position /1000 # value can be changed, testing purposes
 
+    def reward_from_pos(self, pos_state):
+        # Pos state is not normalized here
+        #print("Pos state", pos_state)
+        z_position = pos_state[0][2]
+        return z_position /1000
+    
     def update_target_networks(self):
         """
         Soft-update target networks.
