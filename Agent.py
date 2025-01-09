@@ -9,9 +9,6 @@ class Agent:
     def __init__(self, model=None, headless=False, start_session: bool = False):
         self.values = Values()
         self.action_history = []
-        self.state = None
-        self.action = None
-        self.reward = None
 
         self.sleep_time = 1 # time between actions
         if start_session:
@@ -19,12 +16,13 @@ class Agent:
             self.chrome_ngl.start_session()
         else:
             self.chrome_ngl = None
-        
-        #self.model = model
+
     
     def prepare_state(self, image_path=None, verbose=False):
         state = self.chrome_ngl.get_JSON_state()
         json_state = json.loads(state)
+        print("json state being read:")        
+        print(json_state)
         # for now the state we give in just the parsed position, crossSectionScale, projectionOrientation, projectionScale
         position = json_state["position"]
         crossSectionScale = json_state["crossSectionScale"]
@@ -36,57 +34,11 @@ class Agent:
             print("Current state:", pos_state)
         return pos_state, curr_image, json_state
   
-
-    def decision(self):
-        # TO NOT BE USED IN THE FINAL VERSION
-        # make a decision based on the current state
-        pos_state, curr_image, json_state = self.prepare_state()
-        # preprocess the state by making it a vector
-        # input = [position, crossSectionScale, projectionOrientation, projectionScale, image]
-        # MODEL INPUT = [state, image] (or memory, TBD)
-
-        ## Does not work as everything should be boolean for RL, make boolean increments for each action ? (Only in Deep Q Learning)
-        # OUTPUT OF THE MODEL:
-        # Actions can be:
-        # - left click bool
-        # - right click bool
-        # - double click bool
-        # - x float mouse position
-        # - y float mouse position
-
-        # - key Shift bool
-        # - key Ctrl bool
-        # - key Alt bool
-
-        # JSON actions:
-        # JSON_change: bool
-        # delta_position: 1x3 float array
-        # delta_crossSectionScale: float
-        # delta_projectionOrientation: 1x4 float array
-        # delta_projectionScale: float
-
-        # output_vector = [
-        #                 left_click, right_click, double_click,  # 3 booleans
-        #                 x, y,                                  # 2 floats for mouse position
-        #                 key_Shift, key_Ctrl, key_Alt,          # 3 booleans for keys
-        #                 json_change,                           # 1 boolean for JSON change
-        #                 delta_position_x, delta_position_y, delta_position_z,  # 3 floats
-        #                 delta_crossSectionScale,               # 1 float
-        #                 delta_projectionOrientation_q1, delta_projectionOrientation_q2,
-        #                 delta_projectionOrientation_q3, delta_projectionOrientation_q4,  # 4 floats
-        #                 delta_projectionScale                  # 1 float
-        #             ]
-
-
-
-        discrete_probs, continuous_probs = self.model.action(pos_state, curr_image)
-        output_vector = self.model.build_output_vector(discrete_probs, continuous_probs)
-        # APPLY ACTIONS
-        self.apply_actions(output_vector, json_state)
-        return discrete_probs, continuous_probs, output_vector
         
     def apply_actions(self, output_vector, json_state):
-      
+        """
+            Takes an output_vector of the ActorCritic (discrete actions argmaxed) and transforms it to an environment action that is handled by ChromeNGL
+        """
         (
             left_click, right_click, double_click,  # 3 booleans
             x, y,                                  # 2 floats for mouse position
@@ -124,34 +76,46 @@ class Agent:
             self.chrome_ngl.mouse_key_action(x, y, "double_click", key_pressed)
         elif json_change:
             print("Decided to change the JSON state")
-            json_state["position"][0] += delta_position_x.item() if isinstance(delta_position_x, torch.Tensor) else delta_position_x
-            json_state["position"][1] += delta_position_y.item() if isinstance(delta_position_y, torch.Tensor) else delta_position_y
-            json_state["position"][2] += delta_position_z.item() if isinstance(delta_position_z, torch.Tensor) else delta_position_z
-            
-            json_state["crossSectionScale"] += delta_crossSectionScale.item() if isinstance(delta_crossSectionScale, torch.Tensor) else delta_crossSectionScale
-            
-            json_state["projectionOrientation"][0] += delta_projectionOrientation_q1.item() if isinstance(delta_projectionOrientation_q1, torch.Tensor) else delta_projectionOrientation_q1
-            json_state["projectionOrientation"][1] += delta_projectionOrientation_q2.item() if isinstance(delta_projectionOrientation_q2, torch.Tensor) else delta_projectionOrientation_q2
-            json_state["projectionOrientation"][2] += delta_projectionOrientation_q3.item() if isinstance(delta_projectionOrientation_q3, torch.Tensor) else delta_projectionOrientation_q3
-            json_state["projectionOrientation"][3] += delta_projectionOrientation_q4.item() if isinstance(delta_projectionOrientation_q4, torch.Tensor) else delta_projectionOrientation_q4
-            
-            json_state["projectionScale"] += delta_projectionScale.item()*50 if isinstance(delta_projectionScale, torch.Tensor) else delta_projectionScale
+            #print("Old JSON state is: ", json_state)
+            old_position = json_state["position"][:]
+
+            json_state["position"][0] += delta_position_x*self.values.delta_x_factor 
+            json_state["position"][1] += delta_position_y*self.values.delta_y_factor
+            json_state["position"][2] += delta_position_z*self.values.delta_z_factor
+            print(f"Position updated: {old_position} -> {json_state['position']}")
+
+            old_crossSectionScale = json_state["crossSectionScale"]
+            # crossSectionScale is a multiplicative factor calculated on the previous value: coeff = (new_value - old_value) / old_value
+            json_state["crossSectionScale"] += delta_crossSectionScale*(json_state["crossSectionScale"] + 1e-6)*self.values.delta_crossSectionScale_factor
+            print(f"CrossSectionScale updated: {old_crossSectionScale:.6f} -> {json_state['crossSectionScale']:.6f}")
+
+            old_projectionOrientation = json_state["projectionOrientation"][:]
+            json_state["projectionOrientation"][0] += delta_projectionOrientation_q1*self.values.delta_q1_factor
+            json_state["projectionOrientation"][1] += delta_projectionOrientation_q2*self.values.delta_q2_factor 
+            json_state["projectionOrientation"][2] += delta_projectionOrientation_q3*self.values.delta_q3_factor 
+            json_state["projectionOrientation"][3] += delta_projectionOrientation_q4*self.values.delta_q4_factor 
+            print(f"ProjectionOrientation updated: {old_projectionOrientation} -> {json_state['projectionOrientation']}")
+
+
+            old_projectionScale = json_state["projectionScale"]
+            json_state["projectionScale"] = min(500000, json_state["projectionScale"] + delta_projectionScale*(json_state["projectionScale"] + 1e-6)*self.values.delta_projectionScale_factor)
+            print(f"ProjectionScale updated: {old_projectionScale:.6f} -> {json_state['projectionScale']:.6f}")
 
 
             self.chrome_ngl.change_JSON_state_url(json_state)
+            #print("New JSON state is: ", json_state)
         print("Decision acted upon")
 
     def follow_episode(self, episode):
         """"
-        This function takes a recording and follows the actions of the user in the Neuroglancer viewer step by step
+        This function takes a recording (JSON episode) and follows the actions of the user in the Neuroglancer viewer step by step
         At the moment, the JSON state is fully changed which is not definitive behavior (sort of cheating)
         """
         sequence = episode
-        time.sleep(self.sleep_time)
         self.chrome_ngl.change_JSON_state_url(json.dumps(sequence[0]["state"]))
 
         for i in range(1,len(sequence)):
-            start_time = time.time()
+            #start_time = time.time()
             #self.chrome_ngl.get_screenshot("./screenshots/screenshot_" + str(i) + ".png")
             #print("time to get screenshot: ", time.time() - start_time)
             print("Step: ", i)
@@ -181,21 +145,15 @@ class Agent:
         # To call this function, we need to start the session first. Then it will change states and take screenshots
         parsed_data = []
         parsed_images = []
-
         for i in range(0, len(episode)-1):
-
             self.chrome_ngl.change_JSON_state_url(json.dumps(episode[i]["state"]))
             # we build the action that leads from the previous state to the current state
             # We need to be careful here, the recording saves the action that led to the state with it, not the action taken in the state
-            
-        
             next_episode = episode[i+1]
             current_episode = episode[i]
-            
             next_state = next_episode["state"]
             current_state = current_episode["state"]
             next_action = next_episode["action"]
-            
             output_vector = [
                 0, 0, 0,  # left_click, right_click, double_click
                 0.0, 0.0,  # x, y (mouse position)
@@ -224,22 +182,19 @@ class Agent:
 
             if "Relative position" in next_action:
                 position_data = next_action.split("Relative position: ")[1].split(" with keys:")[0]
-                
-                # Extract x and y values
-                # First, remove the "x=" and "y=" prefixes to parse the values as integers
                 position_parts = position_data.split(", y=")
-                x = int(position_parts[0].replace("x=", "").strip())  # Remove "x=" prefix
-                y = int(position_parts[1].strip())  # Directly parse y value
+                x = int(position_parts[0].replace("x=", "").strip())  
+                y = int(position_parts[1].strip()) 
                 
                 output_vector[3] = x
                 output_vector[4] = y
             
             if "Shift" in next_action:
-                output_vector[5] = 1  # key_Shift
+                output_vector[5] = 1 
             if "Ctrl" in next_action:
-                output_vector[6] = 1  # key_Ctrl
+                output_vector[6] = 1 
             if "Alt" in next_action:
-                output_vector[7] = 1  # key_Alt
+                output_vector[7] = 1 
             
             if screen_action == False:
                 # This means the action was a JSON change
@@ -252,7 +207,7 @@ class Agent:
                 ]
                 output_vector[9], output_vector[10], output_vector[11] = delta_pos
                 
-                output_vector[12] = (next_state["crossSectionScale"] - current_state["crossSectionScale"])
+                output_vector[12] = ((next_state["crossSectionScale"]-current_state["crossSectionScale"]) / (current_state["crossSectionScale"] + 1e-6))
                 
                 delta_orientation = [
                     (next_state["projectionOrientation"][0] - current_state["projectionOrientation"][0]),
@@ -262,7 +217,7 @@ class Agent:
                 ]
                 output_vector[13], output_vector[14], output_vector[15], output_vector[16] = delta_orientation
                 
-                output_vector[17] = (next_state["projectionScale"] - current_state["projectionScale"])
+                output_vector[17] = ((next_state["projectionScale"] - current_state["projectionScale"]) / (current_state["projectionScale"] + 1e-6))
             
             pos_state, curr_image, json_state = self.prepare_state(image_path=f"{save_path}/screenshots/" + str(i) + ".png")
 
@@ -274,30 +229,55 @@ class Agent:
             })
             parsed_images.append(curr_image)
             print("Output vector: ", output_vector)
-            # Save the parsed data to a file (you can choose the format)
-        with open(f"{save_path}/data.json", "w") as f:
+        with open(f"{save_path}/data_reparsed.json", "w") as f:
             json.dump(parsed_data, f, indent=4)
         
         return parsed_data
+    
+    def update_output_vector(self, json_file, save_path=None):
+        with open(json_file, 'r') as f:
+            parsed_data = json.load(f)
+        for entry in parsed_data[:len(parsed_data)-1]:
+            action_vector = list(entry["action_vector"])  
 
+            current_state = entry["json_state"]
+            next_crossSectionScale = current_state["crossSectionScale"] + action_vector[12] 
+            next_projectionScale = current_state["projectionScale"] + action_vector[17]
+            action_vector[12] = (
+                (next_crossSectionScale - current_state["crossSectionScale"]) 
+                / (current_state["crossSectionScale"] + 1e-6)
+            )
+            action_vector[17] = (
+                (next_projectionScale - current_state["projectionScale"]) 
+                / (current_state["projectionScale"] + 1e-6)
+            )
+            entry["action_vector"] = tuple(action_vector)
+
+        output_path = save_path if save_path else json_file
+        with open(output_path, 'w') as f:
+            json.dump(parsed_data, f, indent=4)
+        
+        print(f"Updated JSON file saved at: {output_path}")
 
 
 if __name__ == "__main__":
     rl_agent = Agent(start_session=True)
     rl_agent.chrome_ngl.start_neuroglancer_session()
-    time.sleep(1)
+    #time.sleep(1)
     print("Session started")
-    for i in range(0, 1):
+    for i in range(0, 7):
         file_path = f"./episodes/episode_{i}.json"
         with open(file_path, "r") as file:
             data = json.load(file)
-        save_path = f"./normalized_parsed_episodes/episode_{i}/"
-
+        #file_path = f"./reparsed_episodes/episode_{i}/data.json"
+        save_path = f"./reparsed_episodes/episode_{i}"
+        #rl_agent.update_output_vector(file_path, save_path)
         rl_agent.parse_episode(data, save_path)
         print("Episode completed")
     time.sleep(5)
 
-
-    
-
+    #for i in range(0,1):
+    #    file_path = f"./episodes/episode_{i}.json"
+    #    data = json.load(open(file_path, "r"))
+    #    rl_agent.follow_episode(data)
         

@@ -1,6 +1,5 @@
 from Agent import Agent
 from ActorCritic import ActorNetwork
-import time
 import torch
 from torchvision import transforms
 from Values import Values
@@ -21,7 +20,7 @@ discrete_action_indices = [0, 1, 2, 5, 6, 7, 8]
 
 # Load model with weights
 model = ActorNetwork(discrete_dim=7, continuous_dim=11, image_width=480, image_height=270)
-model.load_state_dict(torch.load("./checkpoints/actor_weights_final_v1.pt"))
+model.load_state_dict(torch.load("./checkpoints/actor_weights_final_v2.pt"))
 model.eval()
 
 
@@ -42,7 +41,9 @@ def preprocess_state(state):
     position[1] / values.position_y_factor,
     position[2] / values.position_z_factor,
     ]
-    norm_crossSectionScale = crossSectionScale / values.crossSectionScale_factor
+    norm_crossSectionScale = crossSectionScale /(values.crossSectionScale_factor)
+    #print(values.crossSectionScale_factor)
+
     norm_projectionOrientation = [
     projectionOrientation[0] / values.projectionOrientation_q1_factor,
     projectionOrientation[1] / values.projectionOrientation_q2_factor,
@@ -50,12 +51,15 @@ def preprocess_state(state):
     projectionOrientation[3] / values.projectionOrientation_q4_factor,
     ]
     norm_projectionScale = projectionScale / values.projectionScale_factor
+
+    print("projection section scale"+ str(projectionScale))
     state_vector = norm_position + [norm_crossSectionScale] + norm_projectionOrientation + [norm_projectionScale]
     return torch.tensor(state_vector, dtype=torch.float32).unsqueeze(0).to("cpu")
 
 # build output vector
 def build_output_vector(discrete_actions, continuous_actions):
     # set the maximum value to 1 and the rest to 0
+    print("action probabilities")
     
     discrete_actions = (discrete_actions == discrete_actions.max()).float()
     discrete_list = discrete_actions.cpu()[0]
@@ -63,8 +67,7 @@ def build_output_vector(discrete_actions, continuous_actions):
 
     output_vector = torch.tensor([0.0] * action_size, dtype=torch.float32).to("cpu")
     #print(len(output_vector))
-    #print(discrete_list)
-    #print(continuous_list)
+    
     for i, idx in enumerate(discrete_action_indices):
         value = discrete_list[i]
         
@@ -83,7 +86,7 @@ agent.chrome_ngl.start_neuroglancer_session()
 
 #agent.chrome_ngl.get_screenshot("./screenshot.png")
 num_episodes = 1
-max_steps = 100
+max_steps = 200
 #target_update_freq = 10 
 
 for episode in range(num_episodes):
@@ -107,6 +110,10 @@ for episode in range(num_episodes):
 
         state_tensor = preprocess_state(pos_state)
         image_tensor = preprocess_image(resize_image)
+
+        print("raw inputs")
+        print(state_tensor)
+        print(pos_state)
 
         with torch.no_grad():
             discrete_probs, continuous_probs = model(state_tensor, image_tensor)

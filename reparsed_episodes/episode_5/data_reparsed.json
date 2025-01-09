@@ -1,0 +1,2459 @@
+[
+    {
+        "pos_state": [
+            [
+                161249.375,
+                75407.8359375,
+                2729.645751953125
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -1756.9375,
+            -375.078125,
+            -3.566650390625,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                161249.375,
+                75407.8359375,
+                2729.645751953125
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                159492.4375,
+                75032.7578125,
+                2726.0791015625
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -1377.765625,
+            -524.1328125,
+            -5.24169921875,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                159492.4375,
+                75032.7578125,
+                2726.0791015625
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                158114.671875,
+                74508.625,
+                2720.83740234375
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -16.640625,
+            -41.8828125,
+            -0.44140625,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                158114.671875,
+                74508.625,
+                2720.83740234375
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                158098.03125,
+                74466.7421875,
+                2720.39599609375
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -1648.046875,
+            -224.0546875,
+            -1.987060546875,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                158098.03125,
+                74466.7421875,
+                2720.39599609375
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                156449.984375,
+                74242.6875,
+                2718.408935546875
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -3204.09375,
+            -338.9921875,
+            -2.837646484375,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                156449.984375,
+                74242.6875,
+                2718.408935546875
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                153245.890625,
+                73903.6953125,
+                2715.5712890625
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -613.484375,
+            -194.828125,
+            -1.925048828125,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Keyboard: keydown",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                153245.890625,
+                73903.6953125,
+                2715.5712890625
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                152632.40625,
+                73708.8671875,
+                2713.646240234375
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -1985.09375,
+            -91.5625,
+            -0.499755859375,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                152632.40625,
+                73708.8671875,
+                2713.646240234375
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                150647.3125,
+                73617.3046875,
+                2713.146484375
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -2952.1875,
+            -195.7109375,
+            -1.375732421875,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                150647.3125,
+                73617.3046875,
+                2713.146484375
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                147695.125,
+                73421.59375,
+                2711.770751953125
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -697.8125,
+            -161.71875,
+            -1.55224609375,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                147695.125,
+                73421.59375,
+                2711.770751953125
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                146997.3125,
+                73259.875,
+                2710.218505859375
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -1976.375,
+            -191.90625,
+            -1.568115234375,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                146997.3125,
+                73259.875,
+                2710.218505859375
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                145020.9375,
+                73067.96875,
+                2708.650390625
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -3464.78125,
+            -381.8125,
+            -3.2314453125,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                145020.9375,
+                73067.96875,
+                2708.650390625
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                141556.15625,
+                72686.15625,
+                2705.4189453125
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -495.8125,
+            -144.125,
+            -1.4130859375,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Keyboard: keydown",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                141556.15625,
+                72686.15625,
+                2705.4189453125
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                141060.34375,
+                72542.03125,
+                2704.005859375
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -1985.078125,
+            -91.5234375,
+            -0.49951171875,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                141060.34375,
+                72542.03125,
+                2704.005859375
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                139075.265625,
+                72450.5078125,
+                2703.50634765625
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -2977.671875,
+            -137.2734375,
+            -0.747802734375,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                139075.265625,
+                72450.5078125,
+                2703.50634765625
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                136097.59375,
+                72313.234375,
+                2702.758544921875
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -143.046875,
+            7.7890625,
+            0.116943359375,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Keyboard: keydown",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                136097.59375,
+                72313.234375,
+                2702.758544921875
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                135954.546875,
+                72321.0234375,
+                2702.87548828125
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -959.25,
+            38.0234375,
+            0.6328125,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Keyboard: keydown",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                135954.546875,
+                72321.0234375,
+                2702.87548828125
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                134995.296875,
+                72359.046875,
+                2703.50830078125
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -3381.359375,
+            -172.3828125,
+            -1.025634765625,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                134995.296875,
+                72359.046875,
+                2703.50830078125
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                131613.9375,
+                72186.6640625,
+                2702.482666015625
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -1404.28125,
+            -223.0078125,
+            -2.036376953125,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                131613.9375,
+                72186.6640625,
+                2702.482666015625
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                130209.65625,
+                71963.65625,
+                2700.4462890625
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -2136.890625,
+            16.6953125,
+            0.686767578125,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                130209.65625,
+                71963.65625,
+                2700.4462890625
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                128072.765625,
+                71980.3515625,
+                2701.133056640625
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -2296.6015625,
+            -17.4765625,
+            0.36279296875,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Keyboard: keydown",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                128072.765625,
+                71980.3515625,
+                2701.133056640625
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                125776.1640625,
+                71962.875,
+                2701.495849609375
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -429.171875,
+            23.4296875,
+            0.3505859375,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                125776.1640625,
+                71962.875,
+                2701.495849609375
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                125346.9921875,
+                71986.3046875,
+                2701.846435546875
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -1337.453125,
+            -55.5,
+            -0.27099609375,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Keyboard: keydown",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                125346.9921875,
+                71986.3046875,
+                2701.846435546875
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                124009.5390625,
+                71930.8046875,
+                2701.575439453125
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -1640.1328125,
+            -81.7890625,
+            -0.4775390625,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                124009.5390625,
+                71930.8046875,
+                2701.575439453125
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                122369.40625,
+                71849.015625,
+                2701.097900390625
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -504.59375,
+            -43.8203125,
+            -0.345458984375,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Keyboard: keydown",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                122369.40625,
+                71849.015625,
+                2701.097900390625
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                121864.8125,
+                71805.1953125,
+                2700.75244140625
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -420.4375,
+            -76.9609375,
+            -0.717529296875,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                121864.8125,
+                71805.1953125,
+                2700.75244140625
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                121444.375,
+                71728.234375,
+                2700.034912109375
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -302.78125,
+            -26.2890625,
+            -0.207275390625,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                121444.375,
+                71728.234375,
+                2700.034912109375
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    },
+    {
+        "pos_state": [
+            [
+                121141.59375,
+                71701.9453125,
+                2699.82763671875
+            ],
+            1.8496565995583267,
+            [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            31260.083367410032
+        ],
+        "action_vector": [
+            0,
+            0,
+            0,
+            0.0,
+            0.0,
+            0,
+            0,
+            0,
+            1,
+            -117.5859375,
+            -50.65625,
+            -0.51025390625,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "action": "Action Event: Drag",
+        "json_state": {
+            "dimensions": {
+                "x": [
+                    4e-09,
+                    "m"
+                ],
+                "y": [
+                    4e-09,
+                    "m"
+                ],
+                "z": [
+                    4e-08,
+                    "m"
+                ]
+            },
+            "position": [
+                121141.59375,
+                71701.9453125,
+                2699.82763671875
+            ],
+            "crossSectionScale": 1.8496565995583267,
+            "projectionOrientation": [
+                -0.028763867914676666,
+                -0.0444197952747345,
+                0.8258264660835266,
+                -0.5614357590675354
+            ],
+            "projectionScale": 31260.083367410032,
+            "layers": [
+                {
+                    "type": "image",
+                    "source": "precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14",
+                    "tab": "source",
+                    "name": "Maryland (USA)-image"
+                },
+                {
+                    "type": "segmentation",
+                    "source": "precomputed://gs://flywire_v141_m783",
+                    "tab": "source",
+                    "segments": [
+                        "720575940623044103"
+                    ],
+                    "name": "flywire_v141_m783"
+                }
+            ],
+            "showDefaultAnnotations": false,
+            "selectedLayer": {
+                "size": 350,
+                "visible": true,
+                "layer": "flywire_v141_m783"
+            },
+            "layout": "xy-3d"
+        }
+    }
+]

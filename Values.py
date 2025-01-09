@@ -7,12 +7,12 @@ class Values:
         self.delta_x_factor = 5000  # delta_position_x
         self.delta_y_factor = 5000  # delta_position_y
         self.delta_z_factor = 10 # delta_position_z
-        self.delta_crossSectionScale_factor = 100  # delta_crossSectionScale
+        self.delta_crossSectionScale_factor = 5  # delta_crossSectionScale
         self.delta_q1_factor = 1  # delta_projectionOrientation_q1
         self.delta_q2_factor = 1  # delta_projectionOrientation_q2
         self.delta_q3_factor = 1  # delta_projectionOrientation_q3
         self.delta_q4_factor = 1  # delta_projectionOrientation_q4
-        self.delta_projectionScale_factor = 100000  # delta_projectionScale
+        self.delta_projectionScale_factor = 100  # delta_projectionScale
 
         # FOR THE POSITION STATE NORMALIZATION
         # From the FLywire dataset, we have the following values

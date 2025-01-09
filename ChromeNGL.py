@@ -133,8 +133,7 @@ class ChromeNGL:
             encoded_json = urllib.parse.quote(serialized_json)
             new_url = f"http://localhost:8000/client/#!{encoded_json}"
             self.change_url(new_url)
-            # refresh the page to ensure the new state is loaded
-            #self.driver.refresh()
+            
         except Exception as e:
             print("An error occurred:", e)
 
