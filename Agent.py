@@ -84,7 +84,7 @@ class Agent:
 
             old_crossSectionScale = json_state["crossSectionScale"]
             # crossSectionScale is a multiplicative factor calculated on the previous value: coeff = (new_value - old_value) / old_value
-            #json_state["crossSectionScale"] += delta_crossSectionScale*(json_state["crossSectionScale"] + 1e-6)*self.values.delta_crossSectionScale_factor
+            json_state["crossSectionScale"] += delta_crossSectionScale*(json_state["crossSectionScale"] + 1e-6)*self.values.delta_crossSectionScale_factor
             print(f"CrossSectionScale updated: {old_crossSectionScale:.6f} -> {json_state['crossSectionScale']:.6f}")
 
             old_projectionOrientation = json_state["projectionOrientation"][:]
@@ -96,9 +96,10 @@ class Agent:
 
 
             old_projectionScale = json_state["projectionScale"]
-            #json_state["projectionScale"] = min(500000, json_state["projectionScale"] + delta_projectionScale*(json_state["projectionScale"] + 1e-6)*self.values.delta_projectionScale_factor)
+            json_state["projectionScale"] = min(500000, json_state["projectionScale"] + delta_projectionScale*(json_state["projectionScale"] + 1e-6)*self.values.delta_projectionScale_factor)
+            json_state["projectionScale"] = max(1, json_state["projectionScale"])
             print(f"ProjectionScale updated: {old_projectionScale:.6f} -> {json_state['projectionScale']:.6f}")
-
+            
 
             self.chrome_ngl.change_JSON_state_url(json_state)
             #print("New JSON state is: ", json_state)
