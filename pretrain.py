@@ -130,12 +130,12 @@ model = ActorCriticModel(state_size=state_size, action_size=action_size, device=
 #agent = Agent(model, start_session=False)
 
 episodes_path = "./reparsed_episodes/"
-num_episodes = 7
+num_episodes = 5
 begin = 0
 # This could be done elsewhere but it is sufficiently fast to be done directly here
 episodes_data = load_episode_data(begin, num_episodes, episodes_path)
 #print("Parsing data")
 #episodes_data = torch.load('./pretrain_data.pt')
 print(f"Loaded {len(episodes_data)} episodes", flush=True)
-pretrain_model(episodes_data, model, batch_size=16, num_epochs=500, gamma=0.99)
+pretrain_model(episodes_data, model, batch_size=16, num_epochs=250, gamma=0.99)
 model.save_model("./checkpoints/actor_weights_final_v2.pt", "./checkpoints/critic_weights_final_v2.pt")

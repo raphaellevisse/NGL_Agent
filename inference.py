@@ -1,122 +1,61 @@
 from Agent import Agent
-from ActorCritic import ActorNetwork
+from ActorCritic import ActorCriticModel
 import torch
 from torchvision import transforms
 from Values import Values
 from PIL import Image
 import io
+import os
 
-
-# initialize pytorch
-torch.autograd.set_detect_anomaly(True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
 
-# normalization values & other values
-values = Values()
-action_size = 18
-continuous_action_indices = [3, 4, 9, 10, 11, 12, 13, 14, 15, 16, 17]
-discrete_action_indices = [0, 1, 2, 5, 6, 7, 8]
+model = ActorCriticModel(state_size=10, action_size=18, device=device) # 10 for 9 values and the image, 18 for 18 possible actions
+actor_weights = "checkpoints/actor_weights_final_v2.pt"
 
-# Load model with weights
-model = ActorNetwork(discrete_dim=7, continuous_dim=11, image_width=480, image_height=270)
-model.load_state_dict(torch.load("./checkpoints/actor_weights_final_v2.pt"))
-model.eval()
+if not os.path.exists(actor_weights):
+     raise FileNotFoundError(f"Actor weights file not found: {actor_weights}")
+model.actor.load_state_dict(torch.load(actor_weights, map_location=device, weights_only=True))
 
-
-
-# preprocess inputs
-def preprocess_image(image):
-    transform = transforms.Compose([
-        transforms.ToTensor(),  
-        transforms.Normalize(mean=[0.5], std=[0.5]) 
-    ])
-    
-    image_tensor = transform(image).unsqueeze(0).to("cpu")  # Add batch dimension
-    return image_tensor
-def preprocess_state(state):
-    position, crossSectionScale, projectionOrientation, projectionScale = state
-    norm_position = [
-    position[0] / values.position_x_factor,
-    position[1] / values.position_y_factor,
-    position[2] / values.position_z_factor,
-    ]
-    norm_crossSectionScale = crossSectionScale /(values.crossSectionScale_factor)
-    #print(values.crossSectionScale_factor)
-
-    norm_projectionOrientation = [
-    projectionOrientation[0] / values.projectionOrientation_q1_factor,
-    projectionOrientation[1] / values.projectionOrientation_q2_factor,
-    projectionOrientation[2] / values.projectionOrientation_q3_factor,
-    projectionOrientation[3] / values.projectionOrientation_q4_factor,
-    ]
-    norm_projectionScale = projectionScale / values.projectionScale_factor
-
-    print("projection section scale"+ str(projectionScale))
-    state_vector = norm_position + [norm_crossSectionScale] + norm_projectionOrientation + [norm_projectionScale]
-    return torch.tensor(state_vector, dtype=torch.float32).unsqueeze(0).to("cpu")
-
-# build output vector
-def build_output_vector(discrete_actions, continuous_actions):
-    # set the maximum value to 1 and the rest to 0
-    print("action probabilities")
-    
-    discrete_actions = (discrete_actions == discrete_actions.max()).float()
-    discrete_list = discrete_actions.cpu()[0]
-    continuous_list = continuous_actions.cpu()[0]
-
-    output_vector = torch.tensor([0.0] * action_size, dtype=torch.float32).to("cpu")
-    #print(len(output_vector))
-    
-    for i, idx in enumerate(discrete_action_indices):
-        value = discrete_list[i]
-        
-        output_vector[idx] = value
-    for idx, value in zip(continuous_action_indices, continuous_list):
-        output_vector[idx] = value
-    print("Output vector with discrete decision (arg-max) and continuous decision", output_vector)
-    return output_vector
-
-
+model.actor.eval()
 
 agent = Agent(headless=False, start_session=True)
 agent.chrome_ngl.start_neuroglancer_session()
-#print(agent.chrome_ngl.get_url())
-#print('Saving screenshot...')
 
-#agent.chrome_ngl.get_screenshot("./screenshot.png")
-num_episodes = 1
-max_steps = 200
-#target_update_freq = 10 
+agent.chrome_ngl.change_url("http://localhost:8000/client/#!%7B%22dimensions%22:%7B%22x%22:%5B4e-9%2C%22m%22%5D%2C%22y%22:%5B4e-9%2C%22m%22%5D%2C%22z%22:%5B4e-8%2C%22m%22%5D%7D%2C%22position%22:%5B138657.265625%2C80856.6953125%2C1335.916015625%5D%2C%22crossSectionScale%22:4.45933655284782%2C%22projectionOrientation%22:%5B0.09884308278560638%2C0.9041123986244202%2C-0.4155852496623993%2C0.009988739155232906%5D%2C%22projectionScale%22:12029.259719517953%2C%22layers%22:%5B%7B%22type%22:%22image%22%2C%22source%22:%22precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14%22%2C%22tab%22:%22source%22%2C%22name%22:%22Maryland%20%28USA%29-image%22%7D%2C%7B%22type%22:%22segmentation%22%2C%22source%22:%22precomputed://gs://flywire_v141_m783%22%2C%22tab%22:%22source%22%2C%22segments%22:%5B%22%21720575940623044103%22%2C%22%21720575940612843473%22%2C%22720575940641265549%22%2C%22720575940625693080%22%2C%22720575940645528430%22%2C%22720575940622572010%22%5D%2C%22name%22:%22flywire_v141_m783%22%7D%5D%2C%22showDefaultAnnotations%22:false%2C%22selectedLayer%22:%7B%22size%22:350%2C%22visible%22:true%2C%22layer%22:%22flywire_v141_m783%22%7D%2C%22layout%22:%22xy-3d%22%7D")
 
-for episode in range(num_episodes):
-    agent.reset()
-    #model.memory.clear()
-    #pos_state, image, json_state = agent.prepare_state(verbose=True)
-    #total_reward = 0
+max_steps = 128  
 
-    for step in range(max_steps):
-        print(f"Episode {episode + 1}/{num_episodes}, Step {step + 1}/{max_steps}")
-        # Select action
-        #print("Making decision...")
-        pos_state, curr_image, json_state = agent.prepare_state()
+for step in range(max_steps):
+    print(f"Step {step + 1}/{max_steps}")
 
-        png_image = io.BytesIO()
-        curr_image.save(png_image, format="PNG")
-        resize_image = Image.open(png_image)
+    pos_state, curr_image, json_state = agent.prepare_state()
 
-        width, height = resize_image.size
-        resize_image.thumbnail((width//2,height//2))
+    png_image = io.BytesIO()
+    curr_image.save(png_image, format="PNG")
+    resize_image = Image.open(png_image)
 
-        state_tensor = preprocess_state(pos_state)
-        image_tensor = preprocess_image(resize_image)
+    width, height = resize_image.size
+    resize_image.thumbnail((width//2,height//2))
+    
+    pos_state_tensor = model.preprocess_state(pos_state)
+    curr_image_tensor = model.preprocess_image(resize_image)
 
-        print("raw inputs")
-        print(state_tensor)
-        print(pos_state)
+    discrete_probs, continuous_probs = model.actor(pos_state_tensor, curr_image_tensor)
+    output_vector = model.build_output_vector(discrete_probs, continuous_probs)
+    agent.apply_actions(output_vector, json_state) # the output vector will either do a click or shift the view via the json state
 
-        with torch.no_grad():
-            discrete_probs, continuous_probs = model(state_tensor, image_tensor)
 
-        output_vector = build_output_vector(discrete_probs, continuous_probs)
-        agent.apply_actions(output_vector, json_state)
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -86,7 +86,8 @@ class Agent:
 
             old_crossSectionScale = json_state["crossSectionScale"]
             # crossSectionScale is a multiplicative factor calculated on the previous value: coeff = (new_value - old_value) / old_value
-            json_state["crossSectionScale"] += delta_crossSectionScale*(json_state["crossSectionScale"] + 1e-6)*self.values.delta_crossSectionScale_factor
+            #json_state["crossSectionScale"] += delta_crossSectionScale*(json_state["crossSectionScale"] + 1e-6)*self.values.delta_crossSectionScale_factor
+            #json_state["crossSectionScale"] = min(500000, )
             print(f"CrossSectionScale updated: {old_crossSectionScale:.6f} -> {json_state['crossSectionScale']:.6f}")
 
             old_projectionOrientation = json_state["projectionOrientation"][:]
@@ -98,7 +99,7 @@ class Agent:
 
 
             old_projectionScale = json_state["projectionScale"]
-            json_state["projectionScale"] = min(500000, json_state["projectionScale"] + delta_projectionScale*(json_state["projectionScale"] + 1e-6)*self.values.delta_projectionScale_factor)
+            #json_state["projectionScale"] = min(500000, json_state["projectionScale"] + delta_projectionScale*(json_state["projectionScale"] + 1e-6)*self.values.delta_projectionScale_factor)
             print(f"ProjectionScale updated: {old_projectionScale:.6f} -> {json_state['projectionScale']:.6f}")
 
 
@@ -265,7 +266,7 @@ if __name__ == "__main__":
     rl_agent.chrome_ngl.start_neuroglancer_session()
     #time.sleep(1)
     print("Session started")
-    for i in range(0, 7):
+    for i in range(0, 5):
         file_path = f"./episodes/episode_{i}.json"
         with open(file_path, "r") as file:
             data = json.load(file)
