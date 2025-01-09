@@ -32,22 +32,29 @@ if '-r' in sys.argv:
     output_file = "./videos/recording.mp4"
     video_data = []
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    out = cv2.VideoWriter(output_file, fourcc, 5, (480, 270)) #5=frame rate
+    out = cv2.VideoWriter(output_file, fourcc, 5, (1920, 1080)) #5=frame rate
 
 for step in range(max_steps):
     print(f"Step {step + 1}/{max_steps}")
 
-    pos_state, curr_image, json_state = agent.prepare_state()
-
     # for video recording
     if '-r' in sys.argv:
+        pos_state, curr_image, json_state = agent.prepare_state(image_width=1920, image_height=1080)
+
         png_image = io.BytesIO()
         curr_image.save(png_image, format="PNG")
         png_image.seek(0)
         video_data.append(png_image.read())
+
+        resize_image = Image.open(png_image)
+        width, height = resize_image.size
+        resize_image.thumbnail((width//4,height//4))
+    else:
+        pos_state, curr_image, json_state = agent.prepare_state()
+        resize_image = curr_image
     
     pos_state_tensor = model.preprocess_state(pos_state)
-    curr_image_tensor = model.preprocess_image(curr_image)
+    curr_image_tensor = model.preprocess_image(resize_image)
 
     discrete_probs, continuous_probs = model.actor(pos_state_tensor, curr_image_tensor)
     output_vector = model.build_output_vector(discrete_probs, continuous_probs)
