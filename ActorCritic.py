@@ -15,7 +15,7 @@ class ActorNetwork(nn.Module):
         self.width = image_width
         self.height = image_height
         # Common layers for both actor and critic
-        #self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)  # 1920x1080 -> 1920x1080
+        
         self.conv2 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1)  # 960x540 -> 480x270
         self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1) # 480x270 -> 240x135
         self.conv4 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1) # 240x135 -> 120x68
@@ -166,8 +166,9 @@ class ActorCriticModel:
         self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=0.001)
         self.scheduler_actor = ReduceLROnPlateau(self.optimizer_actor, mode='min', factor=0.5, patience=10, verbose=True)  # Decrease lr by half if no improvement in 10 epochs
         self.scheduler_critic = ReduceLROnPlateau(self.optimizer_critic, mode='min', factor=0.5, patience=10, verbose=True)
-        self.discrete_loss_fn = torch.nn.CrossEntropyLoss()
-        self.continuous_loss_fn = torch.nn.MSELoss()
+        
+        self.discrete_loss_fn = torch.nn.CrossEntropyLoss(reduction="none")
+        self.continuous_loss_fn = torch.nn.MSELoss(reduction="none")
 
         self.tau = 0.01  # Soft update rate for target networks
 
@@ -180,7 +181,6 @@ class ActorCriticModel:
         
 
     def preprocess_state(self, state):
-
         position, crossSectionScale, projectionOrientation, projectionScale = state
         norm_position = [
         position[0] / self.values.position_x_factor,
@@ -232,22 +232,25 @@ class ActorCriticModel:
         """
         Choose an action based on the current policy (epsilon-greedy).
         """
-        if np.random.rand() <= self.epsilon:
-            print("Epsilon search:", self.epsilon)
-            discrete_actions = torch.zeros(1, len(self.discrete_action_indices)).to(self.device)
-            random_action_index = random.randint(0, discrete_actions.shape[1] - 1)
-            discrete_actions[0, random_action_index] = 1
-            continuous_actions = torch.rand(1, len(self.continuous_action_indices)).to(self.device)
-            return discrete_actions, continuous_actions
+        print("ActorCritic action is not ready to be used and has to be rebuilt for correct epsilon-search.")
+
+        # if not eval:
+        #     # Epsilon-greedy exploration
+        #     if np.random.rand() <= self.epsilon:
+        #         print("Epsilon search:", self.epsilon)
+        #         discrete_actions = torch.zeros(1, len(self.discrete_action_indices)).to(self.device)
+        #         random_action_index = random.randint(0, discrete_actions.shape[1] - 1)
+        #         discrete_actions[0, random_action_index] = 1
+        #         continuous_actions = torch.rand(1, len(self.continuous_action_indices)).to(self.device)
+        #         return discrete_actions, continuous_actions
         
-        state_tensor = self.preprocess_state(pos_state)
-        image_tensor = self.preprocess_image(image)
+        # state_tensor = self.preprocess_state(pos_state)
+        
+        # image_tensor = self.preprocess_image(image)
 
-        with torch.no_grad():
-            discrete_actions, continuous_actions = self.actor(state_tensor, image_tensor)
+        # discrete_actions, continuous_actions = self.actor(state_tensor, image_tensor)
 
-
-        return discrete_actions, continuous_actions
+        # return discrete_actions, continuous_actions
 
     def store_experience(self, pos_state, image, discrete_probs, continuous_probs,reward, next_pos_state, next_image, done):
         """
@@ -369,6 +372,12 @@ class ActorCriticModel:
         z_position = json_state['position'][2]
 
         return z_position /1000 # value can be changed, testing purposes
+    
+    def reward_from_pos(self, pos_state):
+        # Pos state is not normalized here
+        #print("Pos state", pos_state)
+        z_position = pos_state[0][2]
+        return z_position /1000
 
     def update_target_networks(self):
         """

@@ -18,18 +18,16 @@ class Agent:
             self.chrome_ngl = None
 
     
-    def prepare_state(self, image_path=None, verbose=False):
+    def prepare_state(self, image_path=None, verbose=False, image_width=480, image_height=270):
         state = self.chrome_ngl.get_JSON_state()
         json_state = json.loads(state)
-        print("json state being read:")        
-        print(json_state)
         # for now the state we give in just the parsed position, crossSectionScale, projectionOrientation, projectionScale
         position = json_state["position"]
         crossSectionScale = json_state["crossSectionScale"]
         projectionOrientation = json_state["projectionOrientation"]
         projectionScale = json_state["projectionScale"]
         pos_state = [position, crossSectionScale, projectionOrientation, projectionScale]
-        curr_image = self.chrome_ngl.get_screenshot(image_path)
+        curr_image = self.chrome_ngl.get_screenshot(image_path, image_width, image_height)
         if verbose:
             print("Current state:", pos_state)
         return pos_state, curr_image, json_state
@@ -87,7 +85,6 @@ class Agent:
             old_crossSectionScale = json_state["crossSectionScale"]
             # crossSectionScale is a multiplicative factor calculated on the previous value: coeff = (new_value - old_value) / old_value
             #json_state["crossSectionScale"] += delta_crossSectionScale*(json_state["crossSectionScale"] + 1e-6)*self.values.delta_crossSectionScale_factor
-            #json_state["crossSectionScale"] = min(500000, )
             print(f"CrossSectionScale updated: {old_crossSectionScale:.6f} -> {json_state['crossSectionScale']:.6f}")
 
             old_projectionOrientation = json_state["projectionOrientation"][:]
@@ -266,6 +263,8 @@ if __name__ == "__main__":
     rl_agent.chrome_ngl.start_neuroglancer_session()
     #time.sleep(1)
     print("Session started")
+
+
     for i in range(0, 5):
         file_path = f"./episodes/episode_{i}.json"
         with open(file_path, "r") as file:
