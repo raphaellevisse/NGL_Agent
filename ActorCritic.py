@@ -155,12 +155,11 @@ class ActorCriticModel:
         self.image_width = self.values.model_image_width
         self.image_height = self.values.model_image_height
         self.actor = ActorNetwork(discrete_dim, continuous_dim).to(self.device)
-        self.critic = CriticNetwork(self.image_width, self.image_height).to(self.device)
+        self.critic = CriticNetwork().to(self.device)
 
         # Target networks
         self.target_actor = ActorNetwork(discrete_dim, continuous_dim).to(self.device)
-        self.target_critic = CriticNetwork(self.image_width, self.image_height).to(self.device)
-
+        self.target_critic = CriticNetwork().to(self.device)
        
         #self.target_actor.load_state_dict(self.actor.state_dict())
         #self.target_critic.load_state_dict(self.critic.state_dict())
