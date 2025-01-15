@@ -8,12 +8,14 @@ from torchvision import transforms
 from Values import Values
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import copy
+import torchvision.io as io
 
 class ActorNetwork(nn.Module):
-    def __init__(self, discrete_dim, continuous_dim, image_width=480, image_height=270):
+    def __init__(self, discrete_dim, continuous_dim):
         super(ActorNetwork, self).__init__()
-        self.width = image_width
-        self.height = image_height
+        self.values = Values()
+        self.image_width = self.values.model_image_width
+        self.image_height = self.values.model_image_height
         # Common layers for both actor and critic
         
         self.conv2 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1)  # 960x540 -> 480x270
@@ -32,8 +34,8 @@ class ActorNetwork(nn.Module):
         self.discrete_head = nn.Linear(64, discrete_dim)
 
     def _get_conv_output(self):
-        # Create a dummy input tensor to pass through the network
-        dummy_input = torch.zeros(1, 3, self.height, self.width)
+        # Create a dummy input tensor to pass through the network and give the output size
+        dummy_input = torch.zeros(1, 3, self.image_height, self.image_width)
         dummy_output = self.relu(self.conv5(self.relu(self.conv4(self.relu(self.conv3(self.relu(self.conv2(dummy_input))))))))
         return dummy_output.numel()
     
@@ -76,10 +78,11 @@ class ActorNetwork(nn.Module):
         return discrete_actions, continuous_actions
 
 class CriticNetwork(nn.Module):
-    def __init__(self, image_width=480, image_height=270):
+    def __init__(self):
         super(CriticNetwork, self).__init__()
-        self.width = image_width
-        self.height = image_height
+        self.values = Values()
+        self.width = self.values.model_image_width
+        self.height = self.values.model_image_height
         # Common layers for both actor and critic
         #self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)  # 1920x1080 -> 1920x1080 (grayscale)
         self.conv2 = nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1)  # 960x540 -> 480x270
@@ -149,26 +152,26 @@ class ActorCriticModel:
         continuous_dim = len(self.continuous_action_indices)
 
         # IMAGES
-        self.image_width = 480
-        self.image_height = 270
-        self.actor = ActorNetwork(discrete_dim, continuous_dim, self.image_width, self.image_height).to(self.device)
+        self.image_width = self.values.model_image_width
+        self.image_height = self.values.model_image_height
+        self.actor = ActorNetwork(discrete_dim, continuous_dim).to(self.device)
         self.critic = CriticNetwork(self.image_width, self.image_height).to(self.device)
 
         # Target networks
         self.target_actor = ActorNetwork(discrete_dim, continuous_dim).to(self.device)
-        self.target_critic = CriticNetwork().to(self.device)
+        self.target_critic = CriticNetwork(self.image_width, self.image_height).to(self.device)
 
        
-        self.target_actor.load_state_dict(self.actor.state_dict())
-        self.target_critic.load_state_dict(self.critic.state_dict())
+        #self.target_actor.load_state_dict(self.actor.state_dict())
+        #self.target_critic.load_state_dict(self.critic.state_dict())
 
         self.optimizer_actor = optim.Adam(self.actor.parameters(), lr=0.001)
         self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=0.001)
         self.scheduler_actor = ReduceLROnPlateau(self.optimizer_actor, mode='min', factor=0.5, patience=10, verbose=True)  # Decrease lr by half if no improvement in 10 epochs
         self.scheduler_critic = ReduceLROnPlateau(self.optimizer_critic, mode='min', factor=0.5, patience=10, verbose=True)
 
-        self.discrete_loss_fn = torch.nn.CrossEntropyLoss(reduction='none')
-        self.continuous_loss_fn = torch.nn.MSELoss(reduction='none')
+        self.discrete_loss_fn = torch.nn.CrossEntropyLoss()
+        self.continuous_loss_fn = torch.nn.MSELoss()
 
         self.tau = 0.01  # Soft update rate for target networks
 
@@ -220,14 +223,33 @@ class ActorCriticModel:
         return norm_output_vector
 
     def preprocess_image(self, image):
+        # check if it is a PIL image or bytes, if bytes convert to tensor
+
         transform = transforms.Compose([
             transforms.ToTensor(),  
+            transforms.Resize((self.image_height, self.image_width)),
             transforms.Normalize(mean=[0.5], std=[0.5]) 
         ])
         
         image_tensor = transform(image).unsqueeze(0).to(self.device)  # Add batch dimension
         return image_tensor
 
+    def preprocess_image_from_bytes(self, image_bytes):
+        """
+        Preprocess image bytes directly into a PyTorch tensor using torchvision.
+        """
+        try:
+            image_tensor = io.decode_image(torch.tensor(bytearray(image_bytes)))
+        except Exception as e:
+            raise ValueError("Failed to decode image bytes") from e
+        transform = transforms.Compose([
+            transforms.ConvertImageDtype(torch.float32),  # Ensure tensor is float32
+            transforms.Normalize(mean=[0.5], std=[0.5])  # Normalize pixel values to [-1, 1]
+        ])
+        processed_tensor = transform(image_tensor)
+
+        return processed_tensor
+    
     def action(self, pos_state, image, eval=False):
         """
         Choose an action based on the current policy (epsilon-greedy).

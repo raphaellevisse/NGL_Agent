@@ -22,9 +22,12 @@ def load_episode_data(begin, num_episodes, episodes_path):
             screenshot_path = os.path.join(screenshots_path, f"{i}.png")
             if os.path.exists(screenshot_path):
                 image = Image.open(screenshot_path)
-                # width, height = image.size
-                # new_size = (width // 2, height // 2)
-                # image.thumbnail(new_size)
+
+                width, height = image.size
+                # if width == 960 and height == 540:
+                #     continue
+                #     new_size = (width // 2, height // 2)
+                #     image.thumbnail(new_size)
                 images.append(image)
             else:
                 print(f"Screenshot not found at {screenshot_path}")
@@ -109,17 +112,17 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
             #reward_factor = torch.where(delta_rewards <= 1, torch.tensor(1.0).to(device), delta_rewards)
 
             discrete_loss = model.discrete_loss_fn(discrete_probs, discrete_actions)
-
-            discrete_loss = discrete_loss.mean()
+            # discrete_loss = discrete_loss.sum(dim=1)
+            # discrete_loss = discrete_loss.mean()
             #print("Discrete loss", discrete_loss, flush=True)
             #print("continuous probs", continuous_probs.shape, flush=True)
             #print("continuous actions", continuous_actions.shape, flush=True)
 
             continuous_loss = model.continuous_loss_fn(continuous_probs, continuous_actions)
-            continuous_loss = continuous_loss.sum(dim=1)
+            # continuous_loss = continuous_loss.sum(dim=1)
             #print("Continuous loss", continuous_loss.shape, flush=True)
-            continuous_loss = continuous_loss 
-            continuous_loss = continuous_loss.mean()
+            #continuous_loss = continuous_loss 
+            #continuous_loss = continuous_loss.mean()
             #print("Continuous loss", continuous_loss, flush=True)
             actor_loss = discrete_loss + continuous_loss
             #print('Actor loss', actor_loss, flush=True)
@@ -146,21 +149,21 @@ def pretrain_model(episodes_data, model, num_epochs=10, batch_size=32, gamma=0.9
         model.scheduler_critic.step(total_critic_loss/len(episodes_data))
         if (total_actor_loss / len(episodes_data)) < best_avg_loss and epoch > 50:
             best_avg_loss = total_actor_loss / len(episodes_data)
-            model_save_path = f"./checkpoints/actor_weights_best_v6.pt"
-            model.save_model(model_save_path, f"./checkpoints/critic_weights_best_v6.pt")
+            model_save_path = f"./checkpoints/actor_weights_best_click_v2.pt"
+            model.save_model(model_save_path, f"./checkpoints/critic_weights_best_click_v2.pt")
             print("Model saved at: ", model_save_path, flush=True)
 
 state_size = 10 
 action_size = 18 
 model = ActorCriticModel(state_size=state_size, action_size=action_size, device=device)
 
-episodes_path = "./reparsed_episodes/click_only"
-num_episodes = 3
+episodes_path = "./reparsed_episodes/click_only-960x540"
+num_episodes = 1
 begin = 0
 # This could be done elsewhere but it is sufficiently fast to be done directly here
 episodes_data = load_episode_data(begin, num_episodes, episodes_path)
 #print("Parsing data")
 #episodes_data = torch.load('./pretrain_data.pt')
 print(f"Loaded {len(episodes_data)} episodes", flush=True)
-pretrain_model(episodes_data, model, batch_size=64, num_epochs=1000, gamma=0.99)
+pretrain_model(episodes_data, model, batch_size=16, num_epochs=1000, gamma=0.99)
 #model.save_model("./checkpoints/actor_weights_final_v4.pt", "./checkpoints/critic_weights_final_v4.pt")

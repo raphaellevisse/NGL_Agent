@@ -17,8 +17,9 @@ class Agent:
         else:
             self.chrome_ngl = None
 
+
     
-    def prepare_state(self, image_path=None, verbose=False, image_width=480, image_height=270):
+    def prepare_state(self, image_path=None, verbose=False, resize=False):
         state = self.chrome_ngl.get_JSON_state()
         json_state = json.loads(state)
         # for now the state we give in just the parsed position, crossSectionScale, projectionOrientation, projectionScale
@@ -27,13 +28,24 @@ class Agent:
         projectionOrientation = json_state["projectionOrientation"]
         projectionScale = json_state["projectionScale"]
         pos_state = [position, crossSectionScale, projectionOrientation, projectionScale]
-        curr_image = self.chrome_ngl.get_screenshot(image_path, image_width, image_height)
+        curr_image = self.chrome_ngl.get_screenshot(image_path, resize=resize)
         if verbose:
             print("Current state:", pos_state)
         return pos_state, curr_image, json_state
   
+    def get_state(self):
+        state = self.chrome_ngl.get_JSON_state()
+        json_state = json.loads(state)
+        # for now the state we give in just the parsed position, crossSectionScale, projectionOrientation, projectionScale
+        position = json_state["position"]
+        crossSectionScale = json_state["crossSectionScale"]
+        projectionOrientation = json_state["projectionOrientation"]
+        projectionScale = json_state["projectionScale"]
+        pos_state = [position, crossSectionScale, projectionOrientation, projectionScale]
+        return pos_state
+
         
-    def apply_actions(self, output_vector, json_state):
+    def apply_actions(self, output_vector, json_state=None):
         """
             Takes an output_vector of the ActorCritic (discrete actions argmaxed) and transforms it to an environment action that is handled by ChromeNGL
         """
@@ -48,6 +60,10 @@ class Agent:
             delta_projectionOrientation_q3, delta_projectionOrientation_q4,  # 4 floats
             delta_projectionScale                  # 1 float
         ) = [v.item() if isinstance(v, torch.Tensor) else v for v in output_vector]
+        if json_state is None:
+            json_state = self.chrome_ngl.get_JSON_state()
+            json_state = json.loads(json_state)
+
         # fitting output_vector back into action space
         x = x * self.values.x_factor
         y = y * self.values.y_factor
@@ -97,12 +113,14 @@ class Agent:
 
             old_projectionScale = json_state["projectionScale"]
             json_state["projectionScale"] = min(500000, json_state["projectionScale"] + delta_projectionScale*(json_state["projectionScale"] + 1e-6)*self.values.delta_projectionScale_factor)
+            json_state["projectionScale"] = max(500, json_state["projectionScale"])
             print(f"ProjectionScale updated: {old_projectionScale:.6f} -> {json_state['projectionScale']:.6f}")
 
 
             self.chrome_ngl.change_JSON_state_url(json_state)
             #print("New JSON state is: ", json_state)
         print("Decision acted upon")
+
 
     def follow_episode(self, episode):
         """"
@@ -146,7 +164,7 @@ class Agent:
         for i in range(0, len(episode)-1):
             self.chrome_ngl.change_JSON_state_url(json.dumps(episode[i]["state"]))
             if wait:
-                time.sleep(2)
+                time.sleep(0.2)
             # we build the action that leads from the previous state to the current state
             # We need to be careful here, the recording saves the action that led to the state with it, not the action taken in the state
             next_episode = episode[i+1]
@@ -171,8 +189,8 @@ class Agent:
                 output_vector[2] = 1
                 screen_action=True   
                 # double click seems to need a refresh for the neurons to appear, why ?  
-                self.chrome_ngl.refresh()
-                time.sleep(1)
+                #self.chrome_ngl.refresh()
+                #time.sleep(1)
             elif "Left Click" in next_action:
                 output_vector[0] = 1  
                 screen_action=True
@@ -263,19 +281,19 @@ class Agent:
 if __name__ == "__main__":
     rl_agent = Agent(start_session=True)
     rl_agent.chrome_ngl.start_neuroglancer_session()
-    #time.sleep(1)
+    time.sleep(3)
     print("Session started")
 
 
 
 
-    for i in range(0, 3):
+    for i in range(4, 14):
         file_path = f"./episodes/click_only/episode_{i}.json"
         with open(file_path, "r") as file:
             data = json.load(file)
-        file_path = f"./reparsed_episodes/click_only/episode_{i}/data.json"
+        #file_path = f"./reparsed_episodes/click_only/episode_{i}/data.json"
         #save_path = f"./reparsed_episodes/click_only/episode_{i}/data_reparsed.json"
-        save_path = f"./reparsed_episodes/click_only/episode_{i}/"
+        save_path = f"./reparsed_episodes/click_only-960x540/episode_{i}/"
         #rl_agent.update_output_vector(file_path, save_path)
         rl_agent.parse_episode(data, save_path, wait=True)
         print("Episode completed")

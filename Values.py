@@ -1,8 +1,6 @@
 class Values:
     def __init__(self):
-        # ABSOLUTE MOUSE POSITION
-        self.x_factor = 2000
-        self.y_factor = 1200
+
         # DELTA JSON STATE
         self.delta_x_factor = 5000  # delta_position_x
         self.delta_y_factor = 5000  # delta_position_y
@@ -12,7 +10,7 @@ class Values:
         self.delta_q2_factor = 1  # delta_projectionOrientation_q2
         self.delta_q3_factor = 1  # delta_projectionOrientation_q3
         self.delta_q4_factor = 1  # delta_projectionOrientation_q4
-        self.delta_projectionScale_factor = 100  # delta_projectionScale
+        self.delta_projectionScale_factor = 1  # delta_projectionScale
 
         # FOR THE POSITION STATE NORMALIZATION
         # From the FLywire dataset, we have the following values
@@ -31,4 +29,14 @@ class Values:
         self.projectionOrientation_q3_factor = max_projectionOrientation[2]
         self.projectionOrientation_q4_factor = max_projectionOrientation[3]
         self.projectionScale_factor = max_projectionScale
-    
+
+
+        self.data_image_width = 1800
+        self.data_image_height = 900
+
+        self.model_image_width = 960
+        self.model_image_height = 540
+
+                # ABSOLUTE MOUSE POSITION
+        self.x_factor = self.data_image_width
+        self.y_factor = self.data_image_height

@@ -1,3 +1,4 @@
+import platform
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -6,24 +7,36 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from MouseActionHandler import MouseActionHandler
+import base64
 import time
 import json
 import urllib.parse
 from PIL import Image
 import io
 import os
+from Values import Values
+
 class ChromeNGL:
-    def __init__(self, headless=False, width: int = 1920, height: int = 1080):
+    def __init__(self, headless=False):
+        # common values
+        self.values = Values()
+
         self.state = None
         self.action = None
         self.reward = None
-        self.window_width = 1920
-        self.window_height = 1080
+        self.window_width = self.values.data_image_width
+        self.window_height = self.values.data_image_height
+        self.resize_width = self.values.model_image_width
+        self.resize_height = self.values.model_image_height
+
+        chrome_border_height = 87
+        self.window_height += chrome_border_height
         '''Login to Google Account'''
         self.mail_address = 'pnirlagent@gmail.com'
         self.password = 'secret-password'
         
         chrome_options = Options()
+        print("Headless mode:", headless)
         if headless:
             chrome_options.add_argument("--headless")
             #chrome_options.add_argument("--disable-gpu") provokes WebGL error
@@ -31,15 +44,23 @@ class ChromeNGL:
             chrome_options.add_argument("--no-sandbox")
             chrome_options.add_argument("--disable-dev-shm-usage")
 
-        chrome_options.add_argument(f"--window-size={width},{height}")
+        chrome_options.add_argument(f"--window-size={self.window_width},{self.window_height}")
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option("useAutomationExtension", False)
         chrome_options.add_experimental_option("excludeSwitches",["enable-automation"])  
-        chrome_service = Service("chromedriver-mac-arm64/chromedriver")
+        #if on mac:
+
+        if platform.system() == "Darwin":  # macOS
+            chrome_service = Service("chromedriver-mac-arm64/chromedriver")
+        elif platform.system() == "Windows":
+            chrome_service = Service("K:/Coding Projects/Seung RL Agent/agent/NGL_Agent/chromedriver-win64/chromedriver.exe")
+        elif platform.system() == "Linux":  # Linux
+            chrome_service = Service("/home/raphael/Documents/SAuto/chromedriver-linux64/chromedriver")
+            chrome_options.binary_location = "/home/raphael/Documents/SAuto/chrome-linux64/google-chrome"
         self.driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
         self.init_url = 'https://accounts.google.com/Login'
         '''---------------------------------'''
-
+	
         """Action space:"""
         self.action_handler = MouseActionHandler(self.driver)
   
@@ -49,7 +70,8 @@ class ChromeNGL:
         self.google_login()
 
     def start_neuroglancer_session(self):
-        self.change_url("http://localhost:8000/client/#!%7B%22dimensions%22:%7B%22x%22:%5B4e-9%2C%22m%22%5D%2C%22y%22:%5B4e-9%2C%22m%22%5D%2C%22z%22:%5B4e-8%2C%22m%22%5D%7D%2C%22position%22:%5B160533.40625%2C80462.75%2C2479.5%5D%2C%22crossSectionScale%22:1.8496565995583267%2C%22projectionOrientation%22:%5B-0.11066838353872299%2C-0.7560726404190063%2C0.10504592210054398%2C0.6364527344703674%5D%2C%22projectionScale%22:31260.083367410043%2C%22layers%22:%5B%7B%22type%22:%22image%22%2C%22source%22:%22precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14%22%2C%22tab%22:%22source%22%2C%22name%22:%22Maryland%20%28USA%29-image%22%7D%2C%7B%22type%22:%22segmentation%22%2C%22source%22:%22precomputed://gs://flywire_v141_m783%22%2C%22tab%22:%22source%22%2C%22segments%22:%5B%22720575940623044103%22%5D%2C%22name%22:%22flywire_v141_m783%22%7D%5D%2C%22showDefaultAnnotations%22:false%2C%22selectedLayer%22:%7B%22size%22:350%2C%22visible%22:true%2C%22layer%22:%22flywire_v141_m783%22%7D%2C%22layout%22:%22xy-3d%22%7D")
+        new_url = "http://localhost:8000/client/#!%7B%22dimensions%22:%7B%22x%22:%5B4e-9%2C%22m%22%5D%2C%22y%22:%5B4e-9%2C%22m%22%5D%2C%22z%22:%5B4e-8%2C%22m%22%5D%7D%2C%22position%22:%5B143944.703125%2C61076.59375%2C192.5807647705078%5D%2C%22crossSectionScale%22:2.0339912586467497%2C%22projectionOrientation%22:%5B-0.4705163836479187%2C0.8044001460075378%2C-0.30343097448349%2C0.1987067461013794%5D%2C%22projectionScale%22:13976.00585680798%2C%22layers%22:%5B%7B%22type%22:%22image%22%2C%22source%22:%22precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14%22%2C%22tab%22:%22source%22%2C%22name%22:%22Maryland%20%28USA%29-image%22%7D%2C%7B%22type%22:%22segmentation%22%2C%22source%22:%22precomputed://gs://flywire_v141_m783%22%2C%22tab%22:%22source%22%2C%22segments%22:%5B%22%21720575940623044103%22%2C%22%21720575940607208114%22%2C%22720575940603464672%22%5D%2C%22name%22:%22flywire_v141_m783%22%7D%5D%2C%22showDefaultAnnotations%22:false%2C%22selectedLayer%22:%7B%22size%22:350%2C%22layer%22:%22flywire_v141_m783%22%7D%2C%22layout%22:%22xy-3d%22%7D"
+        self.change_url(new_url)
         time.sleep(1)
 
     def refresh(self):
@@ -92,16 +114,65 @@ class ChromeNGL:
         else:
             print("No driver instance found.")
     
-    def get_screenshot(self, save_path: str = None, image_width=480, image_height=270):
+    def get_screenshot(self, save_path: str = None, resize=False, fast_write=False):
+        start_time = time.time()
         screenshot = self.driver.get_screenshot_as_png()
         image = Image.open(io.BytesIO(screenshot))
-        image = image.resize((image_width, image_height))
+        
+        if resize:
+            image = image.resize((self.resize_width, self.resize_height))
         # Optionally save to disk
         if save_path:
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            #os.makedirs(os.path.dirname(save_path), exist_ok=True)
             image.save(save_path, format='PNG')
+        print("Screenshot saved on disk in", time.time() - start_time, "seconds.")
         return image
-    
+
+    def write_screenshot(self, save_path: str, resize=True):
+        # Function optimized for fast writing with time logging
+        total_start_time = time.time()
+
+        # Step 1: Capture screenshot as JPEG
+        step_start = time.time()
+        screenshot_raw = self.driver.execute_cdp_cmd("Page.captureScreenshot", {"format": "jpeg", "quality": 85})
+        screenshot_bytes = base64.b64decode(screenshot_raw["data"])
+        step_end = time.time()
+        print(f"Step 1 - Capture screenshot: {step_end - step_start:.4f} seconds")
+
+        step_start = time.time()
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        step_end = time.time()
+        print(f"Step 2 - Ensure directory exists: {step_end - step_start:.4f} seconds")
+        step_start = time.time()
+        with Image.open(io.BytesIO(screenshot_bytes)) as image:
+            if resize:
+                image = image.resize((self.resize_width, self.resize_height), resample=Image.Resampling.LANCZOS)
+            image.save(save_path, format="JPEG", quality=85, optimize=True) 
+        step_end = time.time()
+        print(f"Step 3-4 - Save image to disk: {step_end - step_start:.4f} seconds")
+        total_end_time = time.time()
+        print(f"Total time for write_screenshot: {total_end_time - total_start_time:.4f} seconds")
+
+    def write_screenshot_bytes(self, save_path: str):
+        total_start_time = time.time()
+        step_start = time.time()
+        screenshot_raw = self.driver.execute_cdp_cmd("Page.captureScreenshot", {"format": "jpeg", "quality": 85})
+        screenshot_bytes = base64.b64decode(screenshot_raw["data"])
+        step_end = time.time()
+        print(f"Step 1 - Capture screenshot: {step_end - step_start:.4f} seconds")
+        step_start = time.time()
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        step_end = time.time()
+        print(f"Step 2 - Ensure directory exists: {step_end - step_start:.4f} seconds")
+        step_start = time.time()
+        with open(save_path, "wb") as file:
+            file.write(screenshot_bytes)
+        step_end = time.time()
+        print(f"Step 3 - Save bytes to disk: {step_end - step_start:.4f} seconds")
+
+        total_end_time = time.time()
+        print(f"Total time for write_screenshot_bytes: {total_end_time - total_start_time:.4f} seconds")
+
 
     def get_JSON_state(self):
         #browser_url = self.driver.current_url
@@ -162,16 +233,23 @@ class ChromeNGL:
         self.window_height = height
 
 if __name__ == "__main__":
-    chrome_ngl = ChromeNGL(headless=False)
+    chrome_ngl = ChromeNGL(headless=True)
     chrome_ngl.start_session()
-    chrome_ngl.start_neuroglancer_session()
+    #chrome_ngl.start_neuroglancer_session()
     time.sleep(1)
-    
-    while True:
+    start_url = "https://neuroglancer-demo.appspot.com/#!%7B%22dimensions%22:%7B%22x%22:%5B4e-9%2C%22m%22%5D%2C%22y%22:%5B4e-9%2C%22m%22%5D%2C%22z%22:%5B4e-8%2C%22m%22%5D%7D%2C%22position%22:%5B138657.265625%2C80856.6953125%2C1335.916015625%5D%2C%22crossSectionScale%22:4.45933655284782%2C%22projectionOrientation%22:%5B0.09884308278560638%2C0.9041123986244202%2C-0.4155852496623993%2C0.009988739155232906%5D%2C%22projectionScale%22:12029.259719517953%2C%22layers%22:%5B%7B%22type%22:%22image%22%2C%22source%22:%22precomputed://https://bossdb-open-data.s3.amazonaws.com/flywire/fafbv14%22%2C%22tab%22:%22source%22%2C%22name%22:%22Maryland%20%28USA%29-image%22%7D%2C%7B%22type%22:%22segmentation%22%2C%22source%22:%22precomputed://gs://flywire_v141_m783%22%2C%22tab%22:%22source%22%2C%22segments%22:%5B%22%21720575940623044103%22%2C%22%21720575940612843473%22%2C%22720575940641265549%22%2C%22720575940625693080%22%2C%22720575940645528430%22%2C%22720575940622572010%22%5D%2C%22name%22:%22flywire_v141_m783%22%7D%5D%2C%22showDefaultAnnotations%22:false%2C%22selectedLayer%22:%7B%22size%22:350%2C%22visible%22:true%2C%22layer%22:%22flywire_v141_m783%22%7D%2C%22layout%22:%22xy-3d%22%7D" 
+    chrome_ngl.change_url(start_url)
+    #chrome_ngl.get_screenshot("./screenshot.png", resize=False)
+    start_time = time.time()
+    for i in range(100):
+        
         try:
+            #chrome_ngl.get_screenshot(f"./proxy/host_images/screenshot_0", resize=True, image_width=960, image_height=540)
+            chrome_ngl.write_screenshot(f"./proxy/host_images/screenshot2.jpeg", resize=True)
+            #chrome_ngl.write_screenshot_bytes(f"./proxy/host_images/screenshot_bytes")
             #print(chrome_ngl.get_url())
             #time.sleep(1)
-            user_input = input("Enter x and y coordinates separated by a comma (or type 'exit' to quit): ").strip()
+            #user_input = input("Enter x and y coordinates separated by a comma (or type 'exit' to quit): ").strip()
             # if user_input.lower() == 'exit':
             #     print("Exiting the script...")
             #     break
@@ -186,8 +264,10 @@ if __name__ == "__main__":
             # chrome_ngl.mouse_key_action(x, y, action, keysPressed)
             # print(f"Action '{action}' performed at ({x}, {y}).")
             # time.sleep(1) 
+            
         except ValueError:
             print("Invalid input. Please enter x and y as integers separated by a comma.")
         except Exception as e:
             print(f"An error occurred: {e}")
-    chrome_ngl.stop_session()
+    print("Time taken: ", time.time() - start_time)
+    print("Average time is ", (time.time() - start_time)/100)
